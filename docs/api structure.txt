@@ -1,0 +1,74 @@
+Request/Response
+
+public sealed class AssistantMessageRequest
+{
+	public string Message {get;set;}
+	public Guid? ConversationId {get;set;}
+}
+
+public sealed class AssistantMessageResponse
+{
+    public AssistantReply Reply { get; set; } = default!;
+    public AssistantWorkflow Workflow { get; set; } = default!;
+}
+
+public sealed class AssistantReply
+{
+    public string Kind { get; set; } = default!;
+    public string Text { get; set; } = default!;
+}
+
+public sealed class AssistantWorkflow
+{
+    public string Status { get; set; } = default!;
+    public string? Intent { get; set; }
+    public string? Domain { get; set; }
+    public bool AwaitingConfirmation { get; set; }
+}
+
+public sealed record TextPayload(string Text) : PresentationPayload;
+
+public sealed record TablePayload(
+    IReadOnlyList<TableColumnDto> Columns,
+    IReadOnlyList<IReadOnlyDictionary<string, object?>> Rows) : PresentationPayload;
+
+public sealed record ChartPayloadData(
+    ChartKind Kind,
+    string XField,
+    string? YField,
+    IReadOnlyList<ChartSeriesDto> Series) : PresentationPayload;
+
+public sealed record StatPayload(
+    string Label,
+    string Value,
+    string? Unit) : PresentationPayload;
+
+public sealed record ListPayload(
+    IReadOnlyList<string> Items) : PresentationPayload;
+
+{
+  "conversationId": "string",
+  "message": "string"
+}
+
+{
+  "reply": {
+    "kind": "clarification | confirmation | success | fallback | error",
+    "text": "string"
+  },
+  "workflow": {
+    "status": "collecting | confirming | executing | completed | fallback | informational | forbidden",
+    "intent": "string | null",
+    "domain": "string | null",
+    "awaitingConfirmation": true
+  },
+  "contents": [
+  {
+	"type": "circle",
+	...
+  }
+  ]
+}
+
+1. universal contents
+2. source (ссылки и тд)

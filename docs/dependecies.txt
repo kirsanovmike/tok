@@ -1,0 +1,123 @@
+"dependencies": {
+
+    "@amcharts/amcharts4": "4.10.20",
+
+    "@tne-ui/audit": "^1.0.8",
+
+    "@tne-ui/components": "^2.0.131",
+
+    "@tne-ui/core": "^2.0.24",
+
+    "@tne-ui/notify": "^1.3.12",
+
+    "@tne-ui/onboarding": "^1.0.46",
+
+    "@tne-ui/sprites": "^1.3.7",
+
+    "axios": "0.21.4",
+
+    "babel-plugin-syntax-dynamic-import": "6.18.0",
+
+    "core-js": "3.24.1",
+
+    "cross-env": "7.0.3",
+
+    "date-fns": "2.28.0",
+
+    "date-fns-tz": "1.3.0",
+
+    "debounce": "1.2.1",
+
+    "loader-utils": "2.0.0",
+
+    "pdfjs-dist": "2.13.216",
+
+    "portal-vue": "2.1.7",
+
+    "print-js": "1.6.0",
+
+    "raw-loader": "4.0.2",
+
+    "v-clipboard": "2.2.3",
+
+    "vue": "2.6.14",
+
+    "vue-meta": "2.4.0",
+
+    "vue-pdf": "4.3.0",
+
+    "vue-resize-sensor": "2.0.0",
+
+    "vue-router": "3.2.0",
+
+    "vuedraggable": "2.24.3",
+
+    "vuelidate": "0.7.7",
+
+    "vuetify": "2.6.3",
+
+    "vuex": "3.4.0",
+
+    "worker-loader": "3.0.8"
+
+  },
+
+  "devDependencies": {
+
+    "@vue/cli-plugin-babel": "4.5.13",
+
+    "@vue/cli-plugin-eslint": "4.5.13",
+
+    "@vue/cli-plugin-router": "4.5.13",
+
+    "@vue/cli-plugin-unit-jest": "4.5.13",
+
+    "@vue/cli-plugin-vuex": "4.5.13",
+
+    "@vue/cli-service": "4.5.13",
+
+    "@vue/eslint-config-airbnb": "5.0.2",
+
+    "@vue/test-utils": "1.0.3",
+
+    "babel-eslint": "10.0.3",
+
+    "eslint": "6.8.0",
+
+    "eslint-plugin-import": "2.25.4",
+
+    "eslint-plugin-prettier": "3.4.1",
+
+    "eslint-plugin-vue": "7.20.0",
+
+    "eslint-plugin-vuetify": "1.1.0",
+
+    "jest-teamcity-reporter": "0.9.0",
+
+    "postcss-html": "1.5.0",
+
+    "prettier": "2.5.1",
+
+    "sass": "1.49.9",
+
+    "sass-loader": "10.2.1",
+
+    "stylelint": "14.5.3",
+
+    "stylelint-config-recommended": "7.0.0",
+
+    "stylelint-config-recommended-vue": "1.3.0",
+
+    "stylelint-config-standard": "25.0.0",
+
+    "stylelint-scss": "4.1.0",
+
+    "stylelint-webpack-plugin": "2.3.2",
+
+    "vue-cli-plugin-vuetify": "2.4.7",
+
+    "vue-template-compiler": "2.6.14",
+
+    "vuetify-loader": "1.7.3"
+
+  }
