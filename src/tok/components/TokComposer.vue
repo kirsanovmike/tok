@@ -47,16 +47,21 @@
         <TokIcon name="clear" :size="22" />
       </button>
 
-      <input
+      <!--
+        Именно `<textarea rows="1">`, а не `<input>`: Shift+Enter должен переносить
+        строку, а поле — расти до потолка и дальше прокручиваться внутри себя.
+        `.exact` на Enter обязателен, иначе Shift+Enter улетал бы отправкой.
+      -->
+      <textarea
         ref="input"
         v-model="value"
-        type="text"
+        rows="1"
         class="tok-composer__input"
         :placeholder="placeholder"
         :disabled="blocked"
         :aria-label="placeholder"
         autocomplete="off"
-        @keydown.enter.prevent="submit"
+        @keydown.enter.exact.prevent="submit"
       />
 
       <button
@@ -87,6 +92,7 @@
 import TokIcon from './icons/TokIcon.vue';
 import { createVoiceSession, VOICE_STATE } from '../voice/session';
 import { describeVoiceError, isVoiceSupported } from '../voice/recorder';
+import { isScrollable, nextTextareaHeight } from '../utils/autoGrow';
 
 const TICK_MS = 1000;
 
@@ -171,6 +177,18 @@ export default {
     },
   },
 
+  watch: {
+    // Высота пересчитывается на любое изменение текста, а не только на `@input`:
+    // вопрос приходит и из чипа-подсказки, и из расшифровки голоса.
+    value() {
+      this.$nextTick(this.resize);
+    },
+  },
+
+  mounted() {
+    this.resize();
+  },
+
   beforeDestroy() {
     // Панель могли закрыть прямо во время записи — микрофон обязан погаснуть.
     this.stopTimer();
@@ -180,6 +198,22 @@ export default {
   methods: {
     focus() {
       if (this.$refs.input) this.$refs.input.focus();
+    },
+
+    /**
+     * Поле растёт под содержимое до потолка, дальше прокручивается внутри себя.
+     *
+     * `height: auto` перед измерением обязателен: `scrollHeight` у элемента с уже
+     * заданной высотой никогда не станет меньше неё, и поле, однажды выросшее,
+     * не ужалось бы обратно после отправки.
+     */
+    resize() {
+      const field = this.$refs.input;
+      if (!field) return;
+
+      field.style.height = 'auto';
+      field.style.height = `${nextTextareaHeight(field.scrollHeight)}px`;
+      field.style.overflowY = isScrollable(field.scrollHeight) ? 'auto' : 'hidden';
     },
 
     setText(text) {
@@ -196,6 +230,7 @@ export default {
       if (!this.canSend) return;
       this.$emit('send', this.value.trim());
       this.value = '';
+      this.$nextTick(this.resize);
     },
 
     startTimer() {
@@ -285,7 +320,8 @@ export default {
 
   &__field {
     display: flex;
-    align-items: center;
+    // По нижнему краю: поле растёт вверх, кнопки не уезжают к его середине.
+    align-items: flex-end;
     gap: $tok-space-sm;
     padding: 6px 6px 6px $tok-space-md;
     background-color: tok-color(surface);
@@ -319,13 +355,22 @@ export default {
   &__input {
     flex: 1 1 auto;
     min-width: 0;
-    padding: 10px 0;
+    // База — одна строка (см. COMPOSER_MIN_HEIGHT в utils/autoGrow.js).
+    // Высота ниже переопределяется инлайном из `resize()`; здесь она нужна, чтобы
+    // поле не мигало полной высотой до первого измерения.
+    height: 32px;
+    max-height: 128px;
+    padding: 6px 0;
+    overflow-y: hidden;
     color: tok-color(text);
     font-family: inherit;
     font-size: 15px;
+    line-height: 20px;
     background: none;
     border: 0;
     outline: none;
+    // Ручку изменения размера убираем: высотой управляет `resize()`.
+    resize: none;
 
     &::placeholder {
       color: tok-color(text-muted);
@@ -369,8 +414,8 @@ export default {
     flex: none;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     background-color: tok-color(accent);
     border: 0;
