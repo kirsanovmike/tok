@@ -14,7 +14,7 @@ import { mount } from '@vue/test-utils';
 
 import TokContentChart from '@/tok/components/contents/TokContentChart.vue';
 import { CONTENT_COMPONENTS } from '@/tok/components/contents/registry';
-import { toXYData } from '@/tok/charts/createChart';
+import { SCROLLBAR_MIN_POINTS, toXYData } from '@/tok/charts/createChart';
 import { resolveChartPalette } from '@/tok/charts/palette';
 import { normalizeSeries } from '@/tok/api/contentShape';
 import { CONTENT_TYPE } from '@/tok/api/contract';
@@ -180,14 +180,55 @@ describe('графики', () => {
       wrapper.destroy();
     });
 
-    it('подписи осей на месте: категории по X, значения по Y', () => {
+    it('подпись оси значений — это HTML над холстом, а не элемент amCharts', () => {
       const wrapper = mountChart(blockOf('line'));
       const { chart } = wrapper.vm;
 
       expect(chart.xAxes.getIndex(0).dataFields.category).toBe('category');
       expect(chart.yAxes.length).toBe(1);
-      // У одного ряда его имя становится подписью оси значений.
-      expect(chart.yAxes.getIndex(0).title.text).toBe('Объём потребления, кВт·ч');
+
+      // Внутри графика подписи оси нет: развёрнутая на 0° подпись резервировала
+      // горизонтальную полосу во всю свою ширину и ужимала график вдвое
+      // (см. docs/charterr.png).
+      expect(chart.yAxes.getIndex(0).title.text).toBeFalsy();
+      // Имя единственного ряда при этом никуда не делось — оно над холстом.
+      expect(wrapper.find('.tok-chart__caption').text()).toBe('Объём потребления, кВт·ч');
+
+      wrapper.destroy();
+    });
+
+    it('у нескольких рядов подписи нет — её роль играет легенда снизу', () => {
+      const wrapper = mountChart(blockOf('line-multi'));
+
+      expect(wrapper.find('.tok-chart__caption').exists()).toBe(false);
+      expect(wrapper.vm.chart.legend.position).toBe('bottom');
+
+      wrapper.destroy();
+    });
+
+    it('ось значений сокращает большие числа, а тултип оставляет полные', () => {
+      const wrapper = mountChart(blockOf('line'));
+      const axis = wrapper.vm.chart.yAxes.getIndex(0);
+
+      // Собственный форматтер, а не общий с графиком: иначе сокращение утекло бы
+      // в тултип, где нужны точные значения.
+      expect(axis.numberFormatter).not.toBe(wrapper.vm.chart.numberFormatter);
+      expect(axis.numberFormatter.numberFormat).toBe('#.#a');
+      expect(axis.numberFormatter.bigNumberPrefixes.map((item) => item.suffix)).toEqual([
+        ' тыс.',
+        ' млн',
+        ' млрд',
+      ]);
+      expect(wrapper.vm.chart.numberFormatter.numberFormat).toBe('#,###.##');
+
+      wrapper.destroy();
+    });
+
+    it('на коротком ряде скроллбара нет — зумить нечего', () => {
+      const wrapper = mountChart(blockOf('line'));
+
+      expect(wrapper.vm.chart.data.length).toBeLessThan(SCROLLBAR_MIN_POINTS);
+      expect(wrapper.vm.chart.scrollbarX).toBeUndefined();
 
       wrapper.destroy();
     });

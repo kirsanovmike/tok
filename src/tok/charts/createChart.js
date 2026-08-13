@@ -23,6 +23,20 @@ const NUMBER_FORMAT = '#,###.##';
 const AREA_FILL_OPACITY = 0.18;
 const COLUMN_RADIUS = 4;
 
+// Порог зум-скроллбара. На полугодии по месяцам зумить нечего, а сам скроллбар
+// съедает высоту и упирается хватом в правый край панели.
+export const SCROLLBAR_MIN_POINTS = 14;
+
+// Сокращения оси значений. Русские, потому что дефолтные `k`/`M`/`G` в интерфейсе
+// энергосбыта читаются как опечатка.
+const BIG_NUMBER_PREFIXES = [
+  { number: 1e3, suffix: ' тыс.' },
+  { number: 1e6, suffix: ' млн' },
+  { number: 1e9, suffix: ' млрд' },
+];
+const AXIS_NUMBER_FORMAT = '#.#a';
+const AXIS_FONT_SIZE = 11;
+
 /** Поле данных серии с индексом `i`. amCharts требует плоскую строку данных. */
 function valueField(index) {
   return `v${index}`;
@@ -56,7 +70,7 @@ function styleAxis(axis, palette) {
   renderer.grid.template.stroke = am4core.color(palette.grid);
   renderer.grid.template.strokeOpacity = 1;
   renderer.labels.template.fill = am4core.color(palette.textMuted);
-  renderer.labels.template.fontSize = 12;
+  renderer.labels.template.fontSize = AXIS_FONT_SIZE;
   // Осевая линия не нужна: сетка уже задаёт систему координат, как в макете.
   renderer.line.strokeOpacity = 0;
   renderer.ticks.template.disabled = true;
@@ -77,10 +91,21 @@ function styleTooltip(series, palette) {
 
 function createLegend(palette) {
   const legend = new am4charts.Legend();
+  // Снизу, а не сверху: сверху легенда отъедала высоту у самого графика, а в
+  // узкой панели высота дороже ширины.
+  legend.position = 'bottom';
   legend.labels.template.fill = am4core.color(palette.text);
-  legend.labels.template.fontSize = 13;
+  legend.labels.template.fontSize = 12;
   legend.valueLabels.template.disabled = true;
-  legend.marginBottom = 8;
+  legend.markers.template.width = 10;
+  legend.markers.template.height = 10;
+  legend.itemContainers.template.paddingTop = 2;
+  legend.itemContainers.template.paddingBottom = 2;
+  legend.marginTop = 8;
+  legend.marginBottom = 0;
+  // Десяток рядов не имеет права выдавить график: легенда прокручивается сама.
+  legend.maxHeight = 56;
+  legend.scrollable = true;
   return legend;
 }
 
@@ -99,37 +124,41 @@ function createBaseChart(element, ChartClass) {
   chart.language.locale = am4langRu;
   chart.numberFormatter.numberFormat = NUMBER_FORMAT;
   chart.paddingLeft = 0;
-  chart.paddingRight = 0;
-  chart.paddingTop = 8;
+  // Не 0: крайний хват зум-скроллбара выступает за область рисования и при нулевом
+  // отступе срезался краем панели (docs/charterr.png).
+  chart.paddingRight = 6;
+  chart.paddingTop = 4;
   chart.paddingBottom = 0;
 
   return chart;
 }
 
-function createXYChart(element, { series, palette, kind, yTitle }) {
+function createXYChart(element, { series, palette, kind }) {
   const chart = createBaseChart(element, am4charts.XYChart);
   chart.data = toXYData(series);
 
   const categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
   categoryAxis.dataFields.category = 'category';
-  categoryAxis.renderer.minGridDistance = 40;
+  // Реже подписи — больше воздуха между ними. В панели 480px три-четыре подписи
+  // читаются, а восемь сливаются в серую полосу.
+  categoryAxis.renderer.minGridDistance = 56;
   // Подпись, которая не влезла, поворачивать некуда — панель узкая; лучше показать
   // реже, чем наложить одну на другую.
   categoryAxis.renderer.labels.template.truncate = true;
-  categoryAxis.renderer.labels.template.maxWidth = 90;
+  categoryAxis.renderer.labels.template.maxWidth = 72;
   styleAxis(categoryAxis, palette);
 
+  // Подпись оси значений внутри графика не задаётся: развёрнутая на 0° подпись
+  // резервировала горизонтальную полосу во всю ширину текста и ужимала график
+  // вдвое (docs/charterr.png). Её рисует компонент — `.tok-chart__caption`.
   const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+  valueAxis.renderer.minGridDistance = 28;
+  // Собственный форматтер: сокращение нужно оси, но не тултипу — там человек ждёт
+  // точное значение, а не «420 тыс.».
+  valueAxis.numberFormatter = new am4core.NumberFormatter();
+  valueAxis.numberFormatter.numberFormat = AXIS_NUMBER_FORMAT;
+  valueAxis.numberFormatter.bigNumberPrefixes = BIG_NUMBER_PREFIXES;
   styleAxis(valueAxis, palette);
-  if (yTitle) {
-    valueAxis.title.text = yTitle;
-    valueAxis.title.fill = am4core.color(palette.textMuted);
-    valueAxis.title.fontSize = 12;
-    valueAxis.title.align = 'left';
-    valueAxis.title.valign = 'top';
-    valueAxis.title.rotation = 0;
-    valueAxis.title.dy = -18;
-  }
 
   const isArea = kind === CONTENT_TYPE.LINE;
   const single = series.length === 1;
@@ -170,9 +199,13 @@ function createXYChart(element, { series, palette, kind, yTitle }) {
   cursor.lineX.stroke = am4core.color(palette.textMuted);
   chart.cursor = cursor;
 
-  // Зум-скроллбар: на тридцати точках и больше без него не разглядеть отдельный день.
-  chart.scrollbarX = new am4core.Scrollbar();
-  chart.scrollbarX.parent = chart.bottomAxesContainer;
+  // Зум-скроллбар — только когда есть что зумить. На шести месяцах он забирал
+  // высоту и не давал ничего взамен.
+  if (chart.data.length >= SCROLLBAR_MIN_POINTS) {
+    chart.scrollbarX = new am4core.Scrollbar();
+    chart.scrollbarX.parent = chart.bottomAxesContainer;
+    chart.scrollbarX.marginTop = 8;
+  }
 
   return chart;
 }
@@ -183,6 +216,11 @@ function createPieChart(element, { series, palette }) {
   // Круговой график показывает одну структуру, а не несколько рядов: берём первый ряд.
   const [first] = series;
   chart.data = first ? first.points.slice() : [];
+
+  // Кольцо, а не сплошной круг: при легенде снизу в узкой панели кольцо читается
+  // как доли, а сплошной круг — как пятно.
+  chart.radius = am4core.percent(80);
+  chart.innerRadius = am4core.percent(50);
 
   const slices = chart.series.push(new am4charts.PieSeries());
   slices.dataFields.value = 'value';
@@ -220,7 +258,6 @@ export function isChartKind(kind) {
  * @param {string} options.kind — `line` | `bar` | `circle`
  * @param {Array}  options.series — уже нормализованные серии (`api/contentShape.js`)
  * @param {object} options.palette — цвета темы (`charts/palette.js`)
- * @param {string} [options.yTitle] — подпись оси значений
  * @param {boolean} [options.licensed] — у хоста есть коммерческая лицензия amCharts
  * @returns {object|null} инстанс графика; `null`, если вид неизвестен
  */

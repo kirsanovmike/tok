@@ -1,6 +1,6 @@
 <template>
   <div class="tok-chart">
-    <div v-if="hasData" class="tok-chart__toolbar">
+    <div v-if="hasData" class="tok-chart__toolbar" role="group" aria-label="Тип графика">
       <button
         v-for="option in kinds"
         :key="option.kind"
@@ -13,6 +13,13 @@
         {{ option.title }}
       </button>
     </div>
+
+    <!--
+      Подпись оси значений — обычный HTML над холстом, а не элемент amCharts.
+      Развёрнутая на 0° подпись внутри графика резервировала под себя горизонтальную
+      полосу во всю ширину текста и ужимала график вдвое (docs/charterr.png).
+    -->
+    <p v-if="yTitle" class="tok-chart__caption">{{ yTitle }}</p>
 
     <div v-if="hasData" ref="canvas" class="tok-chart__canvas" />
 
@@ -73,8 +80,8 @@ export default {
       return this.series.length > 0;
     },
 
-    // Подпись оси значений осмысленна, только когда ряд один: у нескольких рядов
-    // эту роль играет легенда.
+    // Подпись осмысленна, только когда ряд один: у нескольких эту роль играет
+    // легенда. Рисуется в HTML над холстом — см. комментарий в шаблоне.
     yTitle() {
       return this.series.length === 1 ? this.series[0].name : '';
     },
@@ -113,7 +120,6 @@ export default {
       this.chart = createChart(element, {
         kind: this.kind,
         series: this.series,
-        yTitle: this.yTitle,
         palette: resolveChartPalette(element, this.isDark),
         licensed: config.amchartsLicensed === true,
       });
@@ -142,25 +148,30 @@ export default {
 
 <style lang="scss">
 .tok-chart {
-  padding: $tok-space-md;
+  // Отступ меньше прежнего: в панели 480px каждые 8px по краям — это 8px,
+  // которых не хватает подписям оси.
+  padding: $tok-space-sm $tok-space-sm $tok-space-md;
+  overflow: hidden;
   background-color: tok-color(surface);
   border: 1px solid tok-color(border);
   border-radius: $tok-radius-md;
 
   &__toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $tok-space-xs;
+    display: inline-flex;
+    gap: 2px;
     margin-bottom: $tok-space-sm;
+    padding: 2px;
+    background-color: tok-color(surface-muted);
+    border-radius: $tok-radius-sm;
   }
 
   &__switch {
-    padding: 5px 10px;
+    padding: 4px 10px;
     font-family: inherit;
-    font-size: 13px;
-    background-color: tok-color(surface-muted);
+    font-size: 12px;
+    background: none;
     border: 0;
-    border-radius: $tok-radius-sm;
+    border-radius: $tok-radius-sm - 4px;
     cursor: pointer;
 
     // График приезжает отдельным чанком, его CSS подключается позже сброса хоста
@@ -180,15 +191,32 @@ export default {
     }
   }
 
+  &__caption {
+    margin: 0 0 $tok-space-xs;
+    color: tok-color(text-muted);
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
   &__canvas {
     width: 100%;
-    height: 240px;
+    // Выше прежних 240px: легенда и скроллбар теперь снизу, и им нужна собственная
+    // высота, не отнятая у самого графика.
+    height: 260px;
   }
 
   &__empty {
     margin: 0;
     color: tok-color(text-muted);
     font-size: 14px;
+  }
+}
+
+// На узкой панели график ниже: на телефоне важнее видеть ленту, чем один блок
+// во весь экран.
+@media (max-width: 599px) {
+  .tok-chart__canvas {
+    height: 220px;
   }
 }
 </style>
