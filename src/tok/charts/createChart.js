@@ -104,7 +104,9 @@ function createLegend(palette) {
   legend.marginTop = 8;
   legend.marginBottom = 0;
   // Десяток рядов не имеет права выдавить график: легенда прокручивается сама.
-  legend.maxHeight = 56;
+  // 72px — три строки: на панели в 100vw четыре подписи встают в три строки, и
+  // при потолке в две последняя пряталась под прокрутку на ровном месте.
+  legend.maxHeight = 72;
   legend.scrollable = true;
   return legend;
 }
@@ -152,7 +154,10 @@ function createXYChart(element, { series, palette, kind }) {
   // резервировала горизонтальную полосу во всю ширину текста и ужимала график
   // вдвое (docs/charterr.png). Её рисует компонент — `.tok-chart__caption`.
   const valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-  valueAxis.renderer.minGridDistance = 28;
+  // Линий сетки должно быть немного: на холсте в 260px шаг в 28px давал девять
+  // подписей одна под другой — ровно та «серая полоса», от которой уходили на оси
+  // категорий.
+  valueAxis.renderer.minGridDistance = 44;
   // Собственный форматтер: сокращение нужно оси, но не тултипу — там человек ждёт
   // точное значение, а не «420 тыс.».
   valueAxis.numberFormatter = new am4core.NumberFormatter();
