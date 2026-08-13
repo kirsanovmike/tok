@@ -68,12 +68,14 @@ import { formatValue } from '../../utils/format';
  * Блок `table` — колонки и строки в узкой панели (`Пример когда ответ таблица.png`).
  *
  * Две вещи, ради которых таблица не просто `<table>`:
- *   — страницы по 10 строк: полсотни строк в панели шириной 480px пролистывать
+ *   — страницы по 14 строк: полсотни строк в панели шириной 480px пролистывать
  *     колесом бессмысленно, а лента при этом теряет остальные блоки ответа;
  *   — собственный индикатор горизонтальной прокрутки: таблица шире панели —
  *     нормальное состояние, и об этом надо сообщить, не расширяя панель.
  */
-const PAGE_SIZE = 10;
+// Страница в 14 строк: строка уплотнена до ~31px, поэтому блок таблицы занимает
+// столько же места, сколько прежние 10 строк по 43px, но показывает заметно больше.
+const PAGE_SIZE = 14;
 const MIN_THUMB_RATIO = 0.12;
 
 export default {
@@ -209,9 +211,9 @@ export default {
 
     th,
     td {
-      padding: 12px $tok-space-md;
-      font-size: 14px;
-      line-height: 1.35;
+      padding: 7px $tok-space-md;
+      font-size: 13px;
+      line-height: 1.3;
       text-align: left;
       white-space: nowrap;
     }
@@ -231,7 +233,7 @@ export default {
   &__indicator {
     position: relative;
     height: 4px;
-    margin: $tok-space-sm $tok-space-md;
+    margin: $tok-space-xs $tok-space-md;
     background-color: tok-color(surface-elevated);
     border-radius: 2px;
   }
@@ -249,7 +251,7 @@ export default {
     align-items: center;
     justify-content: space-between;
     gap: $tok-space-sm;
-    padding: $tok-space-sm $tok-space-md;
+    padding: $tok-space-xs $tok-space-md;
     border-top: 1px solid tok-color(border);
   }
 
@@ -278,8 +280,8 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     padding: 0;
     background: none;
     border: 0;

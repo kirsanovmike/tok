@@ -197,21 +197,21 @@ describe('рендерер contents[]', () => {
       wrapper.destroy();
     });
 
-    it('50 строк разбиты на страницы по 10, листание меняет содержимое', async () => {
+    it('50 строк разбиты на страницы по 14, листание меняет содержимое', async () => {
       const wrapper = mount(TokContentTable, {
         propsData: { block: contentsOf('table-wide')[0] },
       });
 
       expect(wrapper.findAll('.tok-table__grid th')).toHaveLength(8);
-      expect(wrapper.findAll('.tok-table__grid tbody tr')).toHaveLength(10);
-      expect(wrapper.find('.tok-table__page-counter').text()).toBe('1 / 5');
+      expect(wrapper.findAll('.tok-table__grid tbody tr')).toHaveLength(14);
+      expect(wrapper.find('.tok-table__page-counter').text()).toBe('1 / 4');
 
       const firstPage = wrapper.find('.tok-table__grid tbody').text();
 
       wrapper.findAll('.tok-table__page-button').at(1).trigger('click');
       await flush();
 
-      expect(wrapper.find('.tok-table__page-counter').text()).toBe('2 / 5');
+      expect(wrapper.find('.tok-table__page-counter').text()).toBe('2 / 4');
       expect(wrapper.find('.tok-table__grid tbody').text()).not.toBe(firstPage);
 
       wrapper.destroy();
@@ -225,14 +225,16 @@ describe('рендерер contents[]', () => {
       const buttons = () => wrapper.findAll('.tok-table__page-button');
       expect(buttons().at(0).attributes('disabled')).toBeTruthy();
 
-      for (let i = 0; i < 4; i += 1) {
+      for (let i = 0; i < 3; i += 1) {
         buttons().at(1).trigger('click');
         // eslint-disable-next-line no-await-in-loop
         await flush();
       }
 
-      expect(wrapper.find('.tok-table__page-counter').text()).toBe('5 / 5');
+      expect(wrapper.find('.tok-table__page-counter').text()).toBe('4 / 4');
       expect(buttons().at(1).attributes('disabled')).toBeTruthy();
+      // Последняя страница неполная: 50 = 14 * 3 + 8.
+      expect(wrapper.findAll('.tok-table__grid tbody tr')).toHaveLength(8);
 
       wrapper.destroy();
     });
