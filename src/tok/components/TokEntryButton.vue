@@ -10,7 +10,7 @@
     :tabindex="hidden ? -1 : 0"
     @click="$emit('open')"
   >
-    <TokSparkleIcon class="tok-entry__mark" :size="28" />
+    <TokSparkleIcon class="tok-entry__mark" :size="24" />
   </button>
 </template>
 
@@ -56,12 +56,14 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: 54px;
+  height: 54px;
   padding: 0;
   border: 0;
-  border-radius: $tok-radius-lg;
-  box-shadow: 0 10px 24px tok-color(shadow);
+  border-radius: $tok-radius-md;
+  // Маленькая собранная тень вместо разлитой: смещение меньше радиуса размытия,
+  // поэтому кнопка «лежит» на странице, а не висит над ней.
+  box-shadow: 0 3px 10px tok-color(shadow);
   cursor: pointer;
   transition: transform $tok-duration-panel $tok-easing-panel, opacity 160ms linear;
 

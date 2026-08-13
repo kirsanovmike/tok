@@ -257,7 +257,7 @@ export default {
   // Прозрачность задаётся `opacity`, а не rgba: alpha-канал в токены темы
   // не положить — парсер Vuetify 2 понимает только 6-значный hex.
   background-color: tok-color(overlay);
-  opacity: 0.45;
+  opacity: 0.28;
 }
 
 .tok-panel {
@@ -273,7 +273,7 @@ export default {
   background-color: tok-color(surface);
   // «Шторка»: скруглены только левые углы, правый край строго прямой.
   border-radius: $tok-panel-radius 0 0 $tok-panel-radius;
-  box-shadow: -12px 0 48px tok-color(shadow);
+  box-shadow: -4px 0 28px tok-color(shadow);
 
   &__header {
     display: flex;
