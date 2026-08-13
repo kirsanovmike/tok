@@ -28,16 +28,25 @@
           <TokLogo :width="60" :height="21" />
 
           <div class="tok-panel__header-actions">
-            <button
+            <TokConfirmMenu
               v-if="!isEmpty"
-              type="button"
-              class="tok-panel__icon-button"
-              aria-label="Очистить беседу"
-              :aria-expanded="String(confirmingReset)"
-              @click="askReset"
+              ref="resetMenu"
+              :open="confirmingReset"
+              text="Очистить беседу? Переписка удалится и из окна, и из памяти браузера."
+              @confirm="confirmReset"
+              @cancel="cancelReset"
             >
-              <TokIcon name="trash" :size="20" />
-            </button>
+              <button
+                slot="trigger"
+                type="button"
+                class="tok-panel__icon-button"
+                aria-label="Очистить беседу"
+                :aria-expanded="String(confirmingReset)"
+                @click="askReset"
+              >
+                <TokIcon name="trash" :size="20" />
+              </button>
+            </TokConfirmMenu>
 
             <button
               type="button"
@@ -49,34 +58,6 @@
             </button>
           </div>
         </header>
-
-        <!--
-          Подтверждение очистки — полосой в самой панели, а не системным `confirm()`:
-          модальное окно браузера блокирует страницу хоста, выглядит чужеродно
-          и в некоторых окружениях подавляется вовсе.
-        -->
-        <div
-          v-if="confirmingReset"
-          class="tok-panel__confirm"
-          role="alertdialog"
-          aria-label="Очистить беседу?"
-        >
-          <p class="tok-panel__confirm-text">
-            Очистить беседу? Переписка удалится и из этого окна, и из памяти браузера.
-          </p>
-
-          <div class="tok-panel__confirm-actions">
-            <button
-              ref="confirmReset"
-              type="button"
-              class="tok-button tok-button--primary"
-              @click="confirmReset"
-            >
-              Очистить
-            </button>
-            <button type="button" class="tok-button" @click="cancelReset">Отмена</button>
-          </div>
-        </div>
 
         <div class="tok-panel__body">
           <TokEmptyState v-if="isEmpty" @pick="pickSuggestion" />
@@ -109,6 +90,7 @@
 <script>
 import TokLogo from './icons/TokLogo.vue';
 import TokIcon from './icons/TokIcon.vue';
+import TokConfirmMenu from './TokConfirmMenu.vue';
 import TokEmptyState from './TokEmptyState.vue';
 import TokMessageList from './TokMessageList.vue';
 import TokComposer from './TokComposer.vue';
@@ -122,7 +104,7 @@ const BLOCKED_REASON =
 export default {
   name: 'TokPanel',
 
-  components: { TokLogo, TokIcon, TokEmptyState, TokMessageList, TokComposer },
+  components: { TokLogo, TokIcon, TokConfirmMenu, TokEmptyState, TokMessageList, TokComposer },
 
   mixins: [tokStoreMixin],
 
@@ -227,7 +209,7 @@ export default {
       if (!this.confirmingReset) return;
 
       this.$nextTick(() => {
-        if (this.$refs.confirmReset) this.$refs.confirmReset.focus();
+        if (this.$refs.resetMenu) this.$refs.resetMenu.focus();
       });
     },
 
@@ -312,32 +294,6 @@ export default {
       outline: 2px solid tok-color(accent);
       outline-offset: 2px;
     }
-  }
-
-  &__confirm {
-    display: flex;
-    flex: none;
-    flex-wrap: wrap;
-    gap: $tok-space-sm;
-    align-items: center;
-    justify-content: space-between;
-    margin: 0 $tok-space-lg $tok-space-md;
-    padding: $tok-space-md;
-    background-color: tok-color(surface-muted);
-    border-radius: $tok-radius-md;
-  }
-
-  &__confirm-text {
-    margin: 0;
-    color: tok-color(text);
-    font-size: 14px;
-    line-height: 1.4;
-  }
-
-  &__confirm-actions {
-    display: flex;
-    gap: $tok-space-sm;
-    margin-left: auto;
   }
 
   &__body {

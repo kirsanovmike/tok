@@ -391,7 +391,7 @@ describe('хранение беседы', () => {
       trash(wrapper).trigger('click');
       await flush();
 
-      expect(wrapper.find('.tok-panel__confirm').exists()).toBe(true);
+      expect(wrapper.find('.tok-confirm-menu__popover').exists()).toBe(true);
       expect(store.state.conversation.messages).toHaveLength(2);
       expect(storage.data.has(persistence.key)).toBe(true);
 
@@ -403,10 +403,10 @@ describe('хранение беседы', () => {
 
       trash(wrapper).trigger('click');
       await flush();
-      wrapper.findAll('.tok-panel__confirm .tok-button').at(1).trigger('click');
+      wrapper.findAll('.tok-confirm-menu__actions .tok-button').at(1).trigger('click');
       await flush();
 
-      expect(wrapper.find('.tok-panel__confirm').exists()).toBe(false);
+      expect(wrapper.find('.tok-confirm-menu__popover').exists()).toBe(false);
       expect(store.state.conversation.messages).toHaveLength(2);
 
       wrapper.destroy();
@@ -417,7 +417,7 @@ describe('хранение беседы', () => {
 
       trash(wrapper).trigger('click');
       await flush();
-      wrapper.findAll('.tok-panel__confirm .tok-button').at(0).trigger('click');
+      wrapper.findAll('.tok-confirm-menu__actions .tok-button').at(0).trigger('click');
       await flush();
 
       expect(store.state.conversation.messages).toEqual([]);
@@ -438,9 +438,27 @@ describe('хранение беседы', () => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
       await flush();
 
-      expect(wrapper.find('.tok-panel__confirm').exists()).toBe(false);
+      expect(wrapper.find('.tok-confirm-menu__popover').exists()).toBe(false);
       // Панель закрывать не просили — события `close` не было.
       expect(wrapper.emitted('close')).toBeUndefined();
+
+      wrapper.destroy();
+    });
+
+    it('клик мимо меню закрывает его, ничего не удаляя', async () => {
+      const { wrapper, store } = await withHistory();
+
+      trash(wrapper).trigger('click');
+      await flush();
+      expect(wrapper.find('.tok-confirm-menu__popover').exists()).toBe(true);
+
+      // Именно `mousedown` на документе: меню закрывается до того, как клик
+      // сработает по элементу под ним.
+      document.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+      await flush();
+
+      expect(wrapper.find('.tok-confirm-menu__popover').exists()).toBe(false);
+      expect(store.state.conversation.messages).toHaveLength(2);
 
       wrapper.destroy();
     });
