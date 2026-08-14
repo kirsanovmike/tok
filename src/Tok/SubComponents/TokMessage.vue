@@ -119,7 +119,14 @@ export default {
   display: flex;
   list-style: none;
 
+  // Классическая раскладка чата: свои реплики справа, ответы слева (пункт 1
+  // постановки «Доработки 3»). Ответ Тока занимает всю ширину и остаётся
+  // прижатым влево — пузыря у него нет вовсе.
   &--user {
+    justify-content: flex-end;
+  }
+
+  &--assistant {
     justify-content: flex-start;
   }
 

@@ -1,11 +1,21 @@
 /**
  * Фаза 5 — диалог: пустой экран, лента, композер, отражение workflow, копирование.
  */
+import fs from 'fs';
+import path from 'path';
+
 import { REPLY_KIND, WORKFLOW_STATUS } from '@/Tok/services/api/contract';
 import { SUGGESTIONS } from '@/Tok/services/constants/suggestions';
 import { CONFIRM_TEXT } from '@/Tok/services/store/conversation';
 import { createTokStore } from '@/Tok/services/store';
 import { createControlledApi, createFakeVoice, flush, mountPanel } from './support/tok';
+
+// jsdom не применяет стили из SFC: сторону реплики проверяем по исходнику —
+// так же, как скругления панели в tok-shell.spec.js.
+const MESSAGE_SOURCE = fs.readFileSync(
+  path.resolve(__dirname, '../../src/Tok/SubComponents/TokMessage.vue'),
+  'utf8',
+);
 
 function setup(config) {
   const api = createControlledApi();
@@ -114,6 +124,31 @@ describe('диалог', () => {
   });
 
   describe('лента', () => {
+    it('реплика пользователя прижата вправо, ответ Тока — влево', () => {
+      const user = MESSAGE_SOURCE.slice(MESSAGE_SOURCE.indexOf('&--user {'));
+      const assistant = MESSAGE_SOURCE.slice(MESSAGE_SOURCE.indexOf('&--assistant {'));
+
+      expect(user.slice(0, 120)).toContain('justify-content: flex-end;');
+      expect(assistant.slice(0, 120)).toContain('justify-content: flex-start;');
+    });
+
+    it('стороны переписки помечены модификаторами, а не порядком в ленте', async () => {
+      const { api, store, wrapper } = setup();
+
+      store.dispatch('conversation/send', 'вопрос');
+      await flush();
+      await api.respond({
+        reply: { kind: REPLY_KIND.SUCCESS, text: 'ответ' },
+        workflow: { status: WORKFLOW_STATUS.COMPLETED },
+        contents: [],
+      });
+
+      expect(wrapper.findAll('.tok-message--user')).toHaveLength(1);
+      expect(wrapper.findAll('.tok-message--assistant')).toHaveLength(1);
+
+      wrapper.destroy();
+    });
+
     it('реплику пользователя показывает пузырём, ответ ассистента — без пузыря', async () => {
       const { api, store, wrapper } = setup();
 
