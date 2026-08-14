@@ -32,7 +32,7 @@
         aria-label="Остановить запись и расшифровать"
         @click="stopVoice"
       >
-        <TokIcon name="stop" :size="20" />
+        <TokIcon name="stop" :size="22" />
       </button>
     </div>
 
@@ -343,7 +343,10 @@ export default {
       box-shadow: 0 0 0 3px tok-color(accent-soft);
     }
 
+    // В состоянии записи поле не растёт: выравнивать нечего, и общий `flex-end`
+    // только роняет надпись ниже центров иконок. Здесь — строго по центру.
     &--voice {
+      align-items: center;
       padding-left: 6px;
     }
   }
@@ -406,6 +409,9 @@ export default {
 
   &__clear {
     order: -1;
+    // По центру поля, а не по его низу: при выросшем на несколько строк вводе
+    // крестик обязан оставаться посередине фона (пункт 2 постановки).
+    align-self: center;
     margin-left: -8px;
   }
 
@@ -457,6 +463,9 @@ export default {
     flex: 1 1 auto;
     align-items: center;
     gap: $tok-space-sm;
+    // Высота кнопок отмены и остановки: надпись центрируется ровно между ними,
+    // а не по своей строке.
+    min-height: 36px;
     min-width: 0;
     margin: 0;
     color: tok-color(text-muted);

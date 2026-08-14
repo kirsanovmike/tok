@@ -61,9 +61,8 @@ export default {
   padding: 0;
   border: 0;
   border-radius: $tok-radius-md;
-  // Маленькая собранная тень вместо разлитой: смещение меньше радиуса размытия,
-  // поэтому кнопка «лежит» на странице, а не висит над ней.
-  box-shadow: 0 3px 10px tok-color(shadow);
+  // Совсем небольшая тень: кнопка лежит на странице, а не висит над ней.
+  box-shadow: 0 2px 6px tok-color(shadow);
   cursor: pointer;
   transition: transform $tok-duration-panel $tok-easing-panel, opacity 160ms linear;
 

@@ -7,6 +7,7 @@ import { installTok } from '@/tok';
 import App from '@/demo/App.vue';
 import DemoDashboard from '@/demo/views/DemoDashboard.vue';
 import { THEME_STORAGE_KEY, themes } from '@/demo/theme';
+import { createDemoTokConfig, readDemoMockDelay } from '@/demo/tokConfig';
 
 Vue.use(Vuetify);
 
@@ -81,6 +82,16 @@ describe('демо-хост', () => {
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('light');
 
     wrapper.destroy();
+  });
+
+  it('демо-стенд просит мок отвечать медленно — чтобы лоадер было видно', () => {
+    expect(createDemoTokConfig().mockDelayMs).toBe(6000);
+  });
+
+  it('задержку можно перебить адресной строкой', () => {
+    window.history.replaceState({}, '', '/?tokDelay=0');
+    expect(readDemoMockDelay()).toBe(0);
+    window.history.replaceState({}, '', '/');
   });
 
   it('панель Тока живёт в body, а не внутри разметки хоста', async () => {

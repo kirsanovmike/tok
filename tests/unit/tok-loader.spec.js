@@ -1,5 +1,5 @@
 /**
- * Фаза 6 — индикатор загрузки: вращение вокруг оси Z, ротация фраз, reduced motion.
+ * Индикатор загрузки: вращение вокруг вертикальной оси, сценарий фраз, reduced motion.
  */
 import fs from 'fs';
 import path from 'path';
@@ -7,7 +7,7 @@ import path from 'path';
 import { mount } from '@vue/test-utils';
 
 import TokLoader from '@/tok/components/TokLoader.vue';
-import { LOADING_PHRASES, PHRASE_INTERVAL_MS } from '@/tok/constants/loadingPhrases';
+import { LOADING_PHRASES, PHRASE_INTERVAL_MS, TAIL_SIZE } from '@/tok/constants/loadingPhrases';
 import { nextPhraseIndex } from '@/tok/utils/phraseRotator';
 import { REPLY_KIND, WORKFLOW_STATUS } from '@/tok/api/contract';
 import { createTokStore } from '@/tok/store';
@@ -25,11 +25,11 @@ function walk(dir) {
 
 describe('индикатор загрузки', () => {
   describe('фразы', () => {
-    it('их восемь и они дата-агностичные', () => {
+    it('это сценарий: восемь фраз, первая — «Думаю…», предметных сущностей нет', () => {
       expect(LOADING_PHRASES).toHaveLength(8);
       expect(LOADING_PHRASES[0]).toBe('Думаю…');
-      expect(LOADING_PHRASES).toContain('Шуршу по данным Трансферы…');
-      expect(LOADING_PHRASES).toContain('Нужно ещё немного подумать…');
+      expect(LOADING_PHRASES).toContain('Ищу по Трансфере…');
+      expect(LOADING_PHRASES).toContain('Анализирую данные…');
 
       // Ни одна фраза не обещает конкретной операции с данными —
       // иначе она начнёт врать на половине вопросов.
@@ -37,22 +37,35 @@ describe('индикатор загрузки', () => {
       LOADING_PHRASES.forEach((phrase) => expect(phrase).not.toMatch(targeted));
     });
 
+    it('идёт по порядку и не откатывается к началу', () => {
+      const total = LOADING_PHRASES.length;
+      let index = 0;
+
+      for (let step = 1; step < total; step += 1) {
+        index = nextPhraseIndex(index, total, TAIL_SIZE);
+        expect(index).toBe(step);
+      }
+
+      // Сценарий доигран — дальше крутится только хвост.
+      index = nextPhraseIndex(index, total, TAIL_SIZE);
+      expect(index).toBe(total - TAIL_SIZE);
+      expect(nextPhraseIndex(index, total, TAIL_SIZE)).toBe(total - 1);
+    });
+
     it('за 20 переключений ни одна фраза не выпадает дважды подряд', () => {
       let index = 0;
 
       for (let step = 0; step < 20; step += 1) {
-        const next = nextPhraseIndex(index, LOADING_PHRASES.length);
+        const next = nextPhraseIndex(index, LOADING_PHRASES.length, TAIL_SIZE);
         expect(next).not.toBe(index);
         expect(LOADING_PHRASES[next]).toBeDefined();
         index = next;
       }
     });
 
-    it('устойчив к крайним значениям генератора и к списку из одной фразы', () => {
-      expect(nextPhraseIndex(0, 8, () => 0)).toBe(1);
-      // `random()` вернул почти единицу — индекс не должен выйти за границы.
-      expect(nextPhraseIndex(0, 8, () => 0.999999)).toBe(7);
+    it('устойчив к списку из одной фразы и к слишком большому хвосту', () => {
       expect(nextPhraseIndex(3, 1)).toBe(0);
+      expect(nextPhraseIndex(7, 8, 99)).toBe(0);
     });
 
     it('меняет подпись по таймеру', () => {
@@ -79,13 +92,17 @@ describe('индикатор загрузки', () => {
   });
 
   describe('вращение', () => {
-    it('идёт вокруг оси Z и нигде не встречается rotateX/rotateY', () => {
-      expect(LOADER_SOURCE).toMatch(/transform: rotate\(0deg\)/);
-      expect(LOADER_SOURCE).toMatch(/transform: rotate\(360deg\)/);
+    it('идёт вокруг вертикальной оси', () => {
+      expect(LOADER_SOURCE).toMatch(/transform: rotateY\(0deg\)/);
+      expect(LOADER_SOURCE).toMatch(/transform: rotateY\(360deg\)/);
+      // Без перспективы поворот выродился бы в сжатие по ширине.
+      expect(LOADER_SOURCE).toMatch(/perspective:/);
+    });
 
+    it('другой оси вращения в папке Тока нет', () => {
       const sources = walk(TOK_DIR).filter((file) => /\.(vue|scss)$/.test(file));
       const offenders = sources.filter((file) =>
-        /rotate[XY]\(/.test(fs.readFileSync(file, 'utf8')),
+        /rotateX\(|rotateZ\(|animation: tok-spin-z/.test(fs.readFileSync(file, 'utf8')),
       );
 
       expect(offenders).toEqual([]);

@@ -1,7 +1,7 @@
 <template>
   <div class="tok-empty">
     <div class="tok-empty__greeting">
-      <p class="tok-empty__hello">Привет!<br />Я твой личный ассистент ТОК</p>
+      <p class="tok-empty__hello">Привет!<br />Я Ток - ИИ-ассистент в Трансфере</p>
       <p class="tok-empty__lead">
         Помогу разобраться с тарифом, объёмом потребления и стоимостью по вашим договорам
       </p>

@@ -5,15 +5,60 @@
  * поэтому саму арифметику проверяем на чистой функции, а на компоненте только то,
  * что jsdom действительно умеет: какая клавиша отправляет, а какая переносит строку.
  */
+import fs from 'fs';
+import path from 'path';
+
 import { mount } from '@vue/test-utils';
 
 import TokComposer from '@/tok/components/TokComposer.vue';
+import TokIcon from '@/tok/components/icons/TokIcon.vue';
 import {
   COMPOSER_MAX_HEIGHT,
   COMPOSER_MIN_HEIGHT,
   isScrollable,
   nextTextareaHeight,
 } from '@/tok/utils/autoGrow';
+
+// jsdom не считает layout: выравнивание проверяется по исходнику компонента —
+// так же, как в tests/unit/tok-loader.spec.js.
+const SOURCE = fs.readFileSync(
+  path.resolve(__dirname, '../../src/tok/components/TokComposer.vue'),
+  'utf8',
+);
+
+describe('выравнивание в поле ввода', () => {
+  it('полоса записи выравнивается по центру, а не по низу', () => {
+    const voice = SOURCE.slice(SOURCE.indexOf('&--voice'));
+
+    expect(voice.slice(0, 200)).toContain('align-items: center;');
+  });
+
+  it('надпись записи занимает высоту соседних кнопок', () => {
+    const status = SOURCE.slice(SOURCE.indexOf('&__voice-status {'));
+
+    expect(status.slice(0, 400)).toContain('min-height: 36px;');
+  });
+
+  it('крестик очистки центрируется по высоте поля', () => {
+    const clear = SOURCE.slice(SOURCE.indexOf('&__clear {'));
+
+    expect(clear.slice(0, 300)).toContain('align-self: center;');
+  });
+
+  it('иконка остановки — сплошная заливка, а не обводка', () => {
+    const wrapper = mount(TokIcon, { propsData: { name: 'stop' } });
+    const shape = wrapper.find('path');
+
+    expect(shape.attributes('fill')).toBe('currentColor');
+    expect(shape.attributes('stroke')).toBe('none');
+
+    wrapper.destroy();
+  });
+
+  it('кнопка остановки рисует иконку крупнее — 22, а не 20', () => {
+    expect(SOURCE).toContain('<TokIcon name="stop" :size="22" />');
+  });
+});
 
 describe('высота поля ввода', () => {
   it('одна строка держит минимум, а не схлопывается', () => {

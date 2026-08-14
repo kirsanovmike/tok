@@ -29,7 +29,7 @@ describe('диалог', () => {
 
       expect(wrapper.find('.tok-empty').exists()).toBe(true);
       expect(text).toContain('Привет!');
-      expect(text).toContain('Я твой личный ассистент ТОК');
+      expect(text).toContain('Я Ток - ИИ-ассистент в Трансфере');
 
       const chips = wrapper.findAll('.tok-chip');
       expect(chips).toHaveLength(SUGGESTIONS.length);

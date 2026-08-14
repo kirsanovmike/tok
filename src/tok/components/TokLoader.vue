@@ -12,7 +12,7 @@
 
 <script>
 import TokSparkleIcon from './icons/TokSparkleIcon.vue';
-import { LOADING_PHRASES, PHRASE_INTERVAL_MS } from '../constants/loadingPhrases';
+import { LOADING_PHRASES, PHRASE_INTERVAL_MS, TAIL_SIZE } from '../constants/loadingPhrases';
 import { nextPhraseIndex } from '../utils/phraseRotator';
 
 export default {
@@ -48,7 +48,7 @@ export default {
     // Первая фраза — всегда «Думаю…»: ожидание должно начинаться предсказуемо.
     // Смена фразы идёт и при `prefers-reduced-motion`: это не движение, а текст.
     this.timer = setInterval(() => {
-      this.index = nextPhraseIndex(this.index, this.phrases.length);
+      this.index = nextPhraseIndex(this.index, this.phrases.length, TAIL_SIZE);
     }, this.intervalMs);
   },
 
@@ -72,16 +72,20 @@ export default {
     justify-content: center;
     width: 28px;
     height: 28px;
+    // Без перспективы `rotateY` выглядит не поворотом, а сжатием по ширине:
+    // браузер рисует плоскую проекцию без схода в глубину.
+    perspective: 120px;
     color: tok-color(text-inverse);
     border-radius: 50%;
 
     @include tok-gradient(140deg);
   }
 
-  // Вращение строго вокруг оси Z — то есть в плоскости экрана.
-  // `rotateX` / `rotateY` здесь недопустимы: звёздочка не должна «переворачиваться».
+  // Вращение вокруг вертикальной оси — звёздочка поворачивается к зрителю
+  // ребром и обратно (постановка «Доработки 2», пункт 4). Прежнее вращение
+  // в плоскости экрана (`rotate`) отменено заказчиком.
   &__mark {
-    animation: tok-spin-z 4s linear infinite;
+    animation: tok-spin-y 3.6s linear infinite;
   }
 
   &__phrase {
@@ -90,13 +94,13 @@ export default {
   }
 }
 
-@keyframes tok-spin-z {
+@keyframes tok-spin-y {
   from {
-    transform: rotate(0deg);
+    transform: rotateY(0deg);
   }
 
   to {
-    transform: rotate(360deg);
+    transform: rotateY(360deg);
   }
 }
 

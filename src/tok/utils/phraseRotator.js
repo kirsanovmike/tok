@@ -1,20 +1,30 @@
 /**
  * Выбор следующей фразы загрузки.
  *
- * Требование: одна и та же фраза не выпадает дважды подряд. Простой `Math.random()`
- * по всему списку такого не гарантирует, поэтому берём случайный сдвиг от 1 до N-1 —
- * нулевой сдвиг (то есть повтор) невозможен по построению.
+ * Фразы идут по порядку — это сценарий ожидания (см. `constants/loadingPhrases.js`).
+ * Дойдя до конца, ротатор возвращается не в начало, а к последним `tailSize`
+ * фразам: «Почти готово…» → «Ещё чуть-чуть…» → «Почти готово…». Случайный
+ * выбор здесь был раньше и отменён — он позволял вернуться от «Почти готово…»
+ * к «Думаю…», то есть визуально откатить прогресс.
  *
- * `random` вынесен параметром ради теста: подменяется на предсказуемый генератор.
+ * Требование «одна и та же фраза не выпадает дважды подряд» выполняется по
+ * построению: следующий индекс всегда отличается от текущего.
+ *
+ * @param {number} currentIndex индекс показанной сейчас фразы.
+ * @param {number} total длина списка фраз.
+ * @param {number} [tailSize] сколько последних фраз крутить, когда список кончился.
+ * @returns {number} индекс следующей фразы.
  */
-export function nextPhraseIndex(currentIndex, total, random) {
+export function nextPhraseIndex(currentIndex, total, tailSize = 2) {
   if (total <= 1) return 0;
 
-  const roll = typeof random === 'function' ? random() : Math.random();
-  const offset = 1 + Math.floor(roll * (total - 1));
-  const safeOffset = Math.min(offset, total - 1);
+  const next = currentIndex + 1;
+  if (next < total) return next;
 
-  return (currentIndex + safeOffset) % total;
+  // Сценарий доигран — крутим хвост. Хвост не может быть длиннее списка
+  // и обязан состоять хотя бы из двух фраз, иначе подпись замрёт.
+  const tail = Math.min(Math.max(tailSize, 2), total);
+  return total - tail;
 }
 
 export default nextPhraseIndex;

@@ -23,10 +23,6 @@ const NUMBER_FORMAT = '#,###.##';
 const AREA_FILL_OPACITY = 0.18;
 const COLUMN_RADIUS = 4;
 
-// Порог зум-скроллбара. На полугодии по месяцам зумить нечего, а сам скроллбар
-// съедает высоту и упирается хватом в правый край панели.
-export const SCROLLBAR_MIN_POINTS = 14;
-
 // Сокращения оси значений. Русские, потому что дефолтные `k`/`M`/`G` в интерфейсе
 // энергосбыта читаются как опечатка.
 const BIG_NUMBER_PREFIXES = [
@@ -111,13 +107,93 @@ function createLegend(palette) {
   return legend;
 }
 
+// Высота шкалы масштаба. Дефолтный `am4core.Scrollbar` занимает около 35px —
+// это треть холста в панели 480px, ради которых его в прошлый раз и прятали
+// за порогом по количеству точек. 10px помещаются всегда.
+const SCROLLBAR_HEIGHT = 10;
+const SCROLLBAR_GRIP_WIDTH = 14;
+
+/**
+ * Тонкая шкала масштаба под осью категорий.
+ *
+ * Дефолтные хваты — «гантели» с иконкой-стрелками — выше самой полосы и ломают
+ * её линию. Иконки убираем, но сами хваты оставляем видимой ширины: это
+ * единственная область, за которую шкалу тянут краем, и без неё зум остаётся
+ * только колесом и курсором.
+ *
+ * @param {object} palette цвета темы (`charts/palette.js`).
+ * @returns {object} настроенный `am4core.Scrollbar`.
+ */
+function createZoomScrollbar(palette) {
+  const scrollbar = new am4core.Scrollbar();
+
+  scrollbar.height = SCROLLBAR_HEIGHT;
+  scrollbar.minHeight = SCROLLBAR_HEIGHT;
+  scrollbar.marginTop = 10;
+  scrollbar.marginBottom = 0;
+
+  scrollbar.background.fill = am4core.color(palette.grid);
+  scrollbar.background.fillOpacity = 1;
+  scrollbar.background.cornerRadius(
+    SCROLLBAR_HEIGHT / 2,
+    SCROLLBAR_HEIGHT / 2,
+    SCROLLBAR_HEIGHT / 2,
+    SCROLLBAR_HEIGHT / 2,
+  );
+
+  scrollbar.thumb.background.fill = am4core.color(palette.textMuted);
+  scrollbar.thumb.background.fillOpacity = 0.45;
+  scrollbar.thumb.background.cornerRadius(
+    SCROLLBAR_HEIGHT / 2,
+    SCROLLBAR_HEIGHT / 2,
+    SCROLLBAR_HEIGHT / 2,
+    SCROLLBAR_HEIGHT / 2,
+  );
+
+  // Без этого amCharts перекрашивает ползунок в свой дефолтный синий при наведении
+  // и нажатии — мимо палитры темы.
+  ['hover', 'down'].forEach((key) => {
+    const state = scrollbar.thumb.background.states.getKey(key);
+    if (state) {
+      state.properties.fill = am4core.color(palette.textMuted);
+      state.properties.fillOpacity = 0.7;
+    }
+  });
+
+  // Индексный цикл, а не `forEach`: тело настраивает объект целиком, а мутация
+  // параметра колбэка запрещена airbnb-конфигом (`no-param-reassign`).
+  const grips = [scrollbar.startGrip, scrollbar.endGrip];
+  for (let i = 0; i < grips.length; i += 1) {
+    const grip = grips[i];
+
+    grip.icon.disabled = true;
+    grip.width = SCROLLBAR_GRIP_WIDTH;
+    grip.height = SCROLLBAR_HEIGHT;
+    grip.background.fill = am4core.color(palette.textMuted);
+    grip.background.fillOpacity = 0.7;
+    grip.background.strokeOpacity = 0;
+
+    ['hover', 'down'].forEach((key) => {
+      const state = grip.background.states.getKey(key);
+      if (state) {
+        state.properties.fill = am4core.color(palette.textMuted);
+        state.properties.fillOpacity = 1;
+      }
+    });
+  }
+
+  return scrollbar;
+}
+
 /**
  * Общее для всех видов: локаль, формат чисел, отступы.
  * График создаётся здесь же, а не принимается параметром, — иначе получилась бы
  * функция, которая живёт только ради мутации чужого объекта.
  *
- * Логотип amCharts остаётся, пока заказчик не подтвердит коммерческую лицензию:
- * прятать его без лицензии нельзя. Флаг — `config.amchartsLicensed`.
+ * Логотип amCharts (`<g opacity="0.4">` внутри SVG, CSS-ом не убирается) снимает
+ * сама библиотека: при `am4core.options.commercialLicense = true` она попросту не
+ * создаёт `chart.logo`. Отдельного кода это не требует — только поднятого флага
+ * `config.amchartsLicensed`, а поднимать его без коммерческой лицензии нельзя.
  */
 function createBaseChart(element, ChartClass) {
   const chart = am4core.create(element, ChartClass);
@@ -204,13 +280,11 @@ function createXYChart(element, { series, palette, kind }) {
   cursor.lineX.stroke = am4core.color(palette.textMuted);
   chart.cursor = cursor;
 
-  // Зум-скроллбар — только когда есть что зумить. На шести месяцах он забирал
-  // высоту и не давал ничего взамен.
-  if (chart.data.length >= SCROLLBAR_MIN_POINTS) {
-    chart.scrollbarX = new am4core.Scrollbar();
-    chart.scrollbarX.parent = chart.bottomAxesContainer;
-    chart.scrollbarX.marginTop = 8;
-  }
+  // Шкала масштаба под осью — всегда: она тонкая (10px) и её постоянное
+  // присутствие делает поведение графика предсказуемым. Порог по количеству
+  // точек из доработки 1 отменён постановкой «Доработки 2», пункт 5.
+  chart.scrollbarX = createZoomScrollbar(palette);
+  chart.scrollbarX.parent = chart.bottomAxesContainer;
 
   return chart;
 }

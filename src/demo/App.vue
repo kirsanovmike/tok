@@ -9,7 +9,7 @@
     <DemoFooter />
 
     <!-- Ток встраивается в хост одной строкой: всё остальное он делает сам. -->
-    <TokApp />
+    <TokApp :config="tokConfig" />
   </v-app>
 </template>
 
@@ -19,11 +19,19 @@ import { TokApp } from '@/tok';
 import DemoHeader from '@/demo/components/DemoHeader.vue';
 import DemoFooter from '@/demo/components/DemoFooter.vue';
 import { THEME_STORAGE_KEY } from '@/demo/theme';
+import { createDemoTokConfig } from '@/demo/tokConfig';
 
 export default {
   name: 'DemoApp',
 
   components: { DemoHeader, DemoFooter, TokApp },
+
+  data() {
+    return {
+      /* Настройки Тока для стенда: см. `demo/tokConfig.js`. */
+      tokConfig: createDemoTokConfig(),
+    };
+  },
 
   computed: {
     isDark() {

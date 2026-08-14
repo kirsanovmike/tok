@@ -32,7 +32,7 @@
               v-if="!isEmpty"
               ref="resetMenu"
               :open="confirmingReset"
-              text="Очистить беседу? Переписка удалится и из окна, и из памяти браузера."
+              text="Очистить беседу?"
               @confirm="confirmReset"
               @cancel="cancelReset"
             >
@@ -238,8 +238,10 @@ export default {
   z-index: $tok-z-overlay;
   // Прозрачность задаётся `opacity`, а не rgba: alpha-канал в токены темы
   // не положить — парсер Vuetify 2 понимает только 6-значный hex.
+  // 0.16 вместо 0.28: затемнение обязано отделить панель от страницы, но не
+  // гасить дашборд, ради которого вопрос и задают.
   background-color: tok-color(overlay);
-  opacity: 0.28;
+  opacity: 0.16;
 }
 
 .tok-panel {

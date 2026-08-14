@@ -14,7 +14,7 @@ import { mount } from '@vue/test-utils';
 
 import TokContentChart from '@/tok/components/contents/TokContentChart.vue';
 import { CONTENT_COMPONENTS } from '@/tok/components/contents/registry';
-import { SCROLLBAR_MIN_POINTS, toXYData } from '@/tok/charts/createChart';
+import { toXYData } from '@/tok/charts/createChart';
 import { resolveChartPalette } from '@/tok/charts/palette';
 import { normalizeSeries } from '@/tok/api/contentShape';
 import { CONTENT_TYPE } from '@/tok/api/contract';
@@ -224,10 +224,26 @@ describe('графики', () => {
       wrapper.destroy();
     });
 
-    it('на коротком ряде скроллбара нет — зумить нечего', () => {
+    it('шкала масштаба есть и на коротком ряде — она тонкая', () => {
       const wrapper = mountChart(blockOf('line'));
+      const scrollbar = wrapper.vm.chart.scrollbarX;
 
-      expect(wrapper.vm.chart.data.length).toBeLessThan(SCROLLBAR_MIN_POINTS);
+      // Порог по количеству точек отменён: шкала стоит своей высоты всегда.
+      expect(wrapper.vm.chart.data.length).toBeLessThan(14);
+      expect(scrollbar).toBeDefined();
+      expect(scrollbar.height).toBe(10);
+      // «Гантели» дефолтных хватов ломали линию полосы — иконки сняты, но сами
+      // хваты остались: без них шкалу не потянуть за край.
+      expect(scrollbar.startGrip.icon.disabled).toBe(true);
+      expect(scrollbar.endGrip.icon.disabled).toBe(true);
+      expect(scrollbar.startGrip.width).toBe(14);
+
+      wrapper.destroy();
+    });
+
+    it('у кругового графика шкалы масштаба нет', () => {
+      const wrapper = mountChart(blockOf('circle'));
+
       expect(wrapper.vm.chart.scrollbarX).toBeUndefined();
 
       wrapper.destroy();
@@ -246,14 +262,20 @@ describe('графики', () => {
     it('логотип amCharts прячется только при подтверждённой лицензии', () => {
       const unlicensed = mountChart(blockOf('line'));
       expect(am4core.options.commercialLicense).toBe(false);
+      // Без лицензии логотип есть, и снимать его нельзя.
+      expect(unlicensed.vm.chart.logo).toBeDefined();
       unlicensed.destroy();
 
       const licensed = mountChart(blockOf('line'), {
         provide: { tokConfig: { amchartsLicensed: true } },
       });
       expect(am4core.options.commercialLicense).toBe(true);
+      // При поднятом флаге amCharts сам не создаёт логотип — своего кода не нужно.
+      expect(licensed.vm.chart.logo).toBeUndefined();
       licensed.destroy();
 
+      // Флаг статический на весь модуль amCharts — иначе порядок тестов начнёт
+      // влиять на результат.
       am4core.options.commercialLicense = false;
     });
   });
