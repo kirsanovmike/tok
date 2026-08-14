@@ -1,0 +1,124 @@
+1. При формировании записи (надпись идет запись должна быть выровнена со всеми иконками внутри инпута или текстарии (хз что там за компонент), а сейчас она куда-то вниз уехала.)
+2. крестимк на очистить внутри поля ввода вопроса выровнять внутри его фона посередине сверху и снизу.
+3. Остановить нужно сделать как-то сплошным белым квадратом внутри, а то так непонятно, что это стоп и квадратик белый внутри чуть больше.
+4. поменять вращение у звездочек когда ждем ответ и сделать в моке ожидание подолбше секунд 6, чтобы проверить. а вращение должно быть по вертикальнй оси.
+5. Для графиков Линия и Столбцы сделать внизу тоненькую шкалу масштаба, но чтобы тоненькую, а не дефолтную, чтобы аккуратненько можно было менять масштаб, и она много места не занимала. Также попробовать как-то если есть возможность убрать лого amchart - это вот оно и что внутри него <g opacity="0.4" aria-labelledby="id-1751-title" style="cursor: pointer;" transform="translate(0,199)" filter="url("#filter-id-1751")">
+6. оверлей сделать менее темным вокрук тока. и меньше тенюшку у кнопки входа.
+7. сделать прикольные интерактивные написи в лоадинге - типо ищу по Трансфере, анализирую данные, еше чуть-чуть ну что-то такое.
+8. Перепиши так, чтобы у меня был родительский компонень и его дочерние, и максимум внутри были папки с сервисами - функциями разными, ну крч чтобы я мог положить это к нам в библиотеку компонентов. Там структура примерно такая (ComponentName - папка => (ComponentName.vue, рядом SubComponents - доп компоненты для него и также рядом services или utils которые уже все функции и логику внутри содержат. Сделай так, чтобы вот я потом для тестирования мог просто к нам в либу скопировать и все протестировать.))
+9. Перепиши после все компоненты чтобы красивы было по структуре и это прошло ревью
+Вот пара примеров для ориентира по написанию и оформлению компонента:
+<!-- @slot activator -->
+      <slot name="activator">
+
+<script>
+/**
+ * Компонент TneUserCard для отображения информации о пользователе.
+ * Автор: Кирсанов Михаил
+ * @displayName Tne User Card
+ */
+
+// services
+import { getAvatarAcronym } from "./services";
+// components
+import TneAvatar from "../Avatar/TneAvatar.vue";
+
+export default {
+  name: "TneUserCard",
+  components: {
+    TneAvatar,
+  },
+  props: {
+    /* Объект пользователя. */
+    user: {
+      type: Object,
+      required: true,
+    },
+  },
+  computed: {
+    /* Акроним. */
+    acronym() {
+      return getAvatarAcronym(this.user.fullName);
+    },
+  },
+};
+</script>
+
+export default {
+  name: "TneGlobalSearch",
+  components: {
+    TneGlobalSearchFilter,
+    TneGlobalSearchEmptyBox,
+    TneGlobalSearchItem,
+    TneLazyLoadingBlock,
+    TneLoaderLogo,
+  },
+  props: {
+    /* Словарик поиска для фильтров. */
+    searchFields: {
+      type: Array,
+      default() {
+        return [];
+      },
+    },
+    /* Список найденных элементов. */
+    items: {
+      type: Array,
+      default() {
+        return [];
+      },
+      validator: (items) =>
+        items.every((item) =>
+          ITEMS_FIELDS.every((prop) =>
+            Object.prototype.hasOwnProperty.call(item, prop)
+          )
+        ),
+    },
+    /* Общее количество элементов. */
+    paginationTotalCount: {
+      type: Number,
+      default: 0,
+    },
+    /* Флаг загрузки данных. */
+    itemsLoadingStatus: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  data() {
+    return {
+      MIN_QUERY_LENGTH,
+      sortType: "Name",
+      /* Запрос поиска. */
+      query: "",
+      /* Выбранный тип поиска. */
+      selectedSearchType: "",
+      /* Локальная загрузка - помощник для debounce. */
+      localLoading: false,
+    };
+  },
+  computed: {
+    /* Выбранный тип объекта для поиска. */
+    selectedSearchField() {
+      return this.searchFields?.find(
+        (searchField) => searchField?.type === this.selectedSearchType
+      );
+    },
+
+    /* Общий флаг загрузки. */
+    commonLoadingStatus() {
+      return this.localLoading || this.itemsLoadingStatus;
+    },
+
+    /* Поля сортировки. */
+    sortItems() {
+      const sortItems = [
+        {
+          text:
+            this.selectedSearchType === SEARCH_TYPES.Contract
+              ? "по номеру"
+              : "по наименованию",
+          value: "Name",
+          class: "",
+          visible: true,
+        },

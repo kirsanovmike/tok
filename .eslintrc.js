@@ -19,7 +19,7 @@ module.exports = {
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    // Переносимая папка src/tok не должна знать о демо-хосте.
+    // Переносимая папка src/Tok не должна знать о демо-хосте.
     'no-restricted-imports': [
       'error',
       {
@@ -32,10 +32,23 @@ module.exports = {
   },
   overrides: [
     {
-      // Ограничение на импорты из demo действует только внутри src/tok.
+      // Ограничение на импорты из demo действует только внутри src/Tok.
       files: ['src/demo/**/*.{js,vue}', 'src/main.js', 'tests/**/*.js'],
       rules: {
         'no-restricted-imports': 'off',
+      },
+    },
+    {
+      // Папка копируется в чужой проект, где алиаса `@` может не быть вовсе, —
+      // поэтому внутри неё только относительные пути.
+      files: ['src/Tok/**/*.{js,vue}'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: ['@/*', '**/demo/*'],
+          },
+        ],
       },
     },
     {

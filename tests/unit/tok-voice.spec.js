@@ -15,18 +15,25 @@ import {
   normalizeTranscript,
   TRANSCRIBE_FIELD,
   TRANSCRIBE_FILENAME,
-} from '@/tok/api/transcribe';
-import { createMockTranscriptionClient, DEFAULT_MOCK_TRANSCRIPT } from '@/tok/api/mock/transcribe';
-import { createTranscriptionApi } from '@/tok/api';
-import { createTokConfig } from '@/tok/config';
-import { createVoiceSession, VOICE_STATE } from '@/tok/voice/session';
+} from '@/Tok/services/api/transcribe';
+import {
+  createMockTranscriptionClient,
+  DEFAULT_MOCK_TRANSCRIPT,
+} from '@/Tok/services/api/mock/transcribe';
+import { createTranscriptionApi } from '@/Tok/services/api';
+import { createTokConfig } from '@/Tok/services/config';
+import { createVoiceSession, VOICE_STATE } from '@/Tok/services/voice/session';
 import {
   createRecorder,
   describeVoiceError,
   isVoiceSupported,
   VOICE_ERROR,
-} from '@/tok/voice/recorder';
-import { DEFAULT_FFMPEG_BASE_URL, encodeToMp3, resetFFmpeg } from '@/tok/voice/encodeToMp3';
+} from '@/Tok/services/voice/recorder';
+import {
+  DEFAULT_FFMPEG_BASE_URL,
+  encodeToMp3,
+  resetFFmpeg,
+} from '@/Tok/services/voice/encodeToMp3';
 import { createControlledApi, createFakeVoice, flush, mountPanel } from './support/tok';
 
 jest.mock('axios');

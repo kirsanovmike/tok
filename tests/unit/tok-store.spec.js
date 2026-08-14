@@ -2,10 +2,10 @@
  * Фаза 4 — стор беседы: цепочка «отправка → загрузка → ответ → история пополнилась»
  * и отдельное состояние сбоя.
  */
-import { MESSAGE_AUTHOR, REPLY_KIND, WORKFLOW_STATUS } from '@/tok/api/contract';
-import { createCancelError } from '@/tok/api/errors';
-import { createTokStore } from '@/tok/store';
-import { CONFIRM_TEXT, DECLINE_TEXT } from '@/tok/store/conversation';
+import { MESSAGE_AUTHOR, REPLY_KIND, WORKFLOW_STATUS } from '@/Tok/services/api/contract';
+import { createCancelError } from '@/Tok/services/api/errors';
+import { createTokStore } from '@/Tok/services/store';
+import { CONFIRM_TEXT, DECLINE_TEXT } from '@/Tok/services/store/conversation';
 import { createControlledApi, flush } from './support/tok';
 
 function setup() {

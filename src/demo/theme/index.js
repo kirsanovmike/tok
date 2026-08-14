@@ -2,9 +2,9 @@
  * Сборка темы демо-приложения: палитры хоста + поверхности демо-дашборда + токены Тока.
  *
  * Ровно этот же приём применяется при переносе в Трансферу: к её палитрам добавляются
- * `tokThemeTokens`, остальное остаётся как есть (см. `src/tok/README.md`).
+ * `tokThemeTokens`, остальное остаётся как есть (см. `src/Tok/README.md`).
  */
-import { tokThemeTokens } from '@/tok';
+import { tokThemeTokens } from '@/Tok';
 
 import palettes from './palettes';
 import hostTokens from './hostTokens';

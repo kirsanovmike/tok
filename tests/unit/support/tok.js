@@ -6,10 +6,10 @@
  */
 import { createLocalVue, mount } from '@vue/test-utils';
 
-import TokPanel from '@/tok/components/TokPanel.vue';
-import { createTokConfig } from '@/tok/config';
-import { createTokStore } from '@/tok/store';
-import { normalizeResponse } from '@/tok/api/contract';
+import TokPanel from '@/Tok/SubComponents/TokPanel.vue';
+import { createTokConfig } from '@/Tok/services/config';
+import { createTokStore } from '@/Tok/services/store';
+import { normalizeResponse } from '@/Tok/services/api/contract';
 
 /** Даём отработать микрозадачам и очереди перерисовки Vue. */
 export function flush() {

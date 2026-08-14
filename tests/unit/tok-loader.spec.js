@@ -6,15 +6,19 @@ import path from 'path';
 
 import { mount } from '@vue/test-utils';
 
-import TokLoader from '@/tok/components/TokLoader.vue';
-import { LOADING_PHRASES, PHRASE_INTERVAL_MS, TAIL_SIZE } from '@/tok/constants/loadingPhrases';
-import { nextPhraseIndex } from '@/tok/utils/phraseRotator';
-import { REPLY_KIND, WORKFLOW_STATUS } from '@/tok/api/contract';
-import { createTokStore } from '@/tok/store';
+import TokLoader from '@/Tok/SubComponents/TokLoader.vue';
+import {
+  LOADING_PHRASES,
+  PHRASE_INTERVAL_MS,
+  TAIL_SIZE,
+} from '@/Tok/services/constants/loadingPhrases';
+import { nextPhraseIndex } from '@/Tok/services/utils/phraseRotator';
+import { REPLY_KIND, WORKFLOW_STATUS } from '@/Tok/services/api/contract';
+import { createTokStore } from '@/Tok/services/store';
 import { createControlledApi, flush, mountPanel } from './support/tok';
 
-const TOK_DIR = path.resolve(__dirname, '../../src/tok');
-const LOADER_SOURCE = fs.readFileSync(path.join(TOK_DIR, 'components/TokLoader.vue'), 'utf8');
+const TOK_DIR = path.resolve(__dirname, '../../src/Tok');
+const LOADER_SOURCE = fs.readFileSync(path.join(TOK_DIR, 'SubComponents/TokLoader.vue'), 'utf8');
 
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).reduce((acc, entry) => {

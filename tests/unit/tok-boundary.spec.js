@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const TOK_DIR = path.resolve(__dirname, '../../src/tok');
+const TOK_DIR = path.resolve(__dirname, '../../src/Tok');
 
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).reduce((acc, entry) => {
@@ -13,7 +13,7 @@ function walk(dir) {
 const files = walk(TOK_DIR);
 const sources = files.filter((file) => /\.(js|vue|scss)$/.test(file));
 
-describe('граница переносимой папки src/tok', () => {
+describe('граница переносимой папки src/Tok', () => {
   it('в папке есть исходники', () => {
     expect(sources.length).toBeGreaterThan(0);
   });
@@ -44,7 +44,7 @@ describe('граница переносимой папки src/tok', () => {
     // (ADR-0002). Проверка grep-ом, чтобы требование не нарушила будущая правка.
     // Упоминание в комментарии-объяснении внутри `encodeToMp3.js` — не подключение.
     const offenders = sources
-      .filter((file) => !file.endsWith(path.join('voice', 'encodeToMp3.js')))
+      .filter((file) => !file.endsWith(path.join('services', 'voice', 'encodeToMp3.js')))
       .filter((file) => /core-mt|SharedArrayBuffer/.test(fs.readFileSync(file, 'utf8')));
 
     expect(offenders).toEqual([]);
@@ -56,5 +56,32 @@ describe('граница переносимой папки src/tok', () => {
       .filter((file) => fs.readFileSync(file, 'utf8').includes('linear-gradient('));
 
     expect(offenders).toEqual([]);
+  });
+
+  it('в папке нет абсолютных импортов — она копируется как есть', () => {
+    // Алиаса `@` в чужом проекте может не быть вовсе: папку кладут в общую
+    // библиотеку компонентов целиком, вместе с этой проверкой.
+    const offenders = sources
+      .filter((file) => /\.(js|vue)$/.test(file))
+      .filter((file) => /from ['"]@\//.test(fs.readFileSync(file, 'utf8')));
+
+    expect(offenders).toEqual([]);
+  });
+
+  it('раскладка библиотечная: Tok.vue, SubComponents/, services/', () => {
+    expect(fs.existsSync(path.join(TOK_DIR, 'Tok.vue'))).toBe(true);
+
+    // Ни одного .vue вне корня и SubComponents/.
+    const strays = files
+      .filter((file) => file.endsWith('.vue'))
+      .filter((file) => path.dirname(file) !== TOK_DIR)
+      .filter((file) => path.dirname(file) !== path.join(TOK_DIR, 'SubComponents'));
+    expect(strays).toEqual([]);
+
+    // В services/ — ни одного компонента: там только логика и данные.
+    const componentsInServices = files
+      .filter((file) => file.startsWith(path.join(TOK_DIR, 'services')))
+      .filter((file) => file.endsWith('.vue'));
+    expect(componentsInServices).toEqual([]);
   });
 });

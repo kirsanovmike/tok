@@ -10,19 +10,19 @@ import path from 'path';
 import Vue from 'vue';
 import { createLocalVue, mount } from '@vue/test-utils';
 
-import { installTok, TokApp } from '@/tok';
-import { resetPageScrollLock } from '@/tok/utils/scrollLock';
+import { installTok, Tok } from '@/Tok';
+import { resetPageScrollLock } from '@/Tok/services/utils/scrollLock';
 import { flush, mountPanel } from './support/tok';
 
 const PANEL_SOURCE = fs.readFileSync(
-  path.resolve(__dirname, '../../src/tok/components/TokPanel.vue'),
+  path.resolve(__dirname, '../../src/Tok/SubComponents/TokPanel.vue'),
   'utf8',
 );
 
 function mountApp() {
   const localVue = createLocalVue();
   installTok(localVue);
-  return mount(TokApp, { localVue });
+  return mount(Tok, { localVue });
 }
 
 describe('оболочка Тока', () => {
@@ -54,7 +54,7 @@ describe('оболочка Тока', () => {
 
     it('градиент и позиция заданы токенами, а не хардкодом', () => {
       const source = fs.readFileSync(
-        path.resolve(__dirname, '../../src/tok/components/TokEntryButton.vue'),
+        path.resolve(__dirname, '../../src/Tok/SubComponents/TokEntryButton.vue'),
         'utf8',
       );
 
@@ -191,7 +191,7 @@ describe('оболочка Тока', () => {
 
       const localVue = createLocalVue();
       installTok(localVue);
-      const wrapper = mount(TokApp, { localVue, attachTo: anchor });
+      const wrapper = mount(Tok, { localVue, attachTo: anchor });
       await flush();
 
       const entry = document.querySelector('.tok-entry');

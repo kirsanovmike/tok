@@ -1,13 +1,13 @@
 import Vuetify from 'vuetify';
 import { mount, createLocalVue } from '@vue/test-utils';
 
-import { installTok, TokApp } from '@/tok';
+import { installTok, Tok } from '@/Tok';
 
-// Хост-обёртка: имитирует место вёрстки, куда Трансфера вставляет <TokApp />.
+// Хост-обёртка: имитирует место вёрстки, куда Трансфера вставляет <Tok />.
 const HostStub = {
   name: 'HostStub',
-  components: { TokApp },
-  template: '<div id="in-place"><TokApp /></div>',
+  components: { Tok },
+  template: '<div id="in-place"><Tok /></div>',
 };
 
 describe('портал Тока', () => {
@@ -33,7 +33,7 @@ describe('портал Тока', () => {
 
     expect(rendered).not.toBeNull();
     expect(inPlace).not.toBeNull();
-    // Портал вынес разметку за пределы поддерева, куда вставлен <TokApp />.
+    // Портал вынес разметку за пределы поддерева, куда вставлен <Tok />.
     expect(inPlace.contains(rendered)).toBe(false);
 
     wrapper.destroy();

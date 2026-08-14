@@ -1,6 +1,6 @@
 import palettes from '@/demo/theme/palettes';
 import hostTokens from '@/demo/theme/hostTokens';
-import tokTokens from '@/tok/theme/tokens';
+import tokTokens from '@/Tok/theme/tokens';
 import { themes } from '@/demo/theme';
 
 /** Плоский список ключей: `indigo.lighten5`, `tok-surface`, ... */

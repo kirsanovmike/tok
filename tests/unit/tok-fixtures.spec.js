@@ -10,12 +10,12 @@
  * `unknown-content` специально содержит тип, которого в контракте нет. Проверяется
  * такая диагностика отдельно, в `tok-contents.spec.js`.
  */
-import { REPLY_KINDS, WORKFLOW_STATUSES, CONTENT_TYPES } from '@/tok/api/contract';
-import { createMockAssistantClient } from '@/tok/api/mock';
-import { allFixtures, fixtures } from '@/tok/api/mock/fixtures';
-import { CONTENT_WARNING_PREFIX } from '@/tok/components/contents/warn';
-import { createTokConfig } from '@/tok/config';
-import { createTokStore } from '@/tok/store';
+import { REPLY_KINDS, WORKFLOW_STATUSES, CONTENT_TYPES } from '@/Tok/services/api/contract';
+import { createMockAssistantClient } from '@/Tok/services/api/mock';
+import { allFixtures, fixtures } from '@/Tok/services/api/mock/fixtures';
+import { CONTENT_WARNING_PREFIX } from '@/Tok/services/warn';
+import { createTokConfig } from '@/Tok/services/config';
+import { createTokStore } from '@/Tok/services/store';
 import { flush, mountPanel } from './support/tok';
 
 /** Предупреждения, которые не являются заявленным поведением диспетчера блоков. */

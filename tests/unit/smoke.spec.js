@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Vuetify from 'vuetify';
 import { mount, createLocalVue } from '@vue/test-utils';
 
-import { installTok, TokApp } from '@/tok';
+import { installTok, Tok } from '@/Tok';
 
 Vue.use(Vuetify);
 
@@ -11,7 +11,7 @@ describe('каркас проекта', () => {
     const localVue = createLocalVue();
     installTok(localVue);
 
-    const wrapper = mount(TokApp, {
+    const wrapper = mount(Tok, {
       localVue,
       vuetify: new Vuetify(),
     });

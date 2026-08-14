@@ -12,14 +12,14 @@
 import * as am4core from '@amcharts/amcharts4/core';
 import { mount } from '@vue/test-utils';
 
-import TokContentChart from '@/tok/components/contents/TokContentChart.vue';
-import { CONTENT_COMPONENTS } from '@/tok/components/contents/registry';
-import { toXYData } from '@/tok/charts/createChart';
-import { resolveChartPalette } from '@/tok/charts/palette';
-import { normalizeSeries } from '@/tok/api/contentShape';
-import { CONTENT_TYPE } from '@/tok/api/contract';
-import { findFixtureById } from '@/tok/api/mock/fixtures';
-import tokens from '@/tok/theme/tokens';
+import TokContentChart from '@/Tok/SubComponents/TokContentChart.vue';
+import { CONTENT_COMPONENTS } from '@/Tok/services/contentRegistry';
+import { toXYData } from '@/Tok/services/charts/createChart';
+import { resolveChartPalette } from '@/Tok/services/charts/palette';
+import { normalizeSeries } from '@/Tok/services/api/contentShape';
+import { CONTENT_TYPE } from '@/Tok/services/api/contract';
+import { findFixtureById } from '@/Tok/services/api/mock/fixtures';
+import tokens from '@/Tok/theme/tokens';
 import { createControlledApi, flush, mountPanel } from './support/tok';
 
 function blockOf(fixtureId) {

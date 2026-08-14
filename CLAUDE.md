@@ -4,13 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current state of the repo
 
-There is **no code yet** — only `docs/` (specification, Figma reference screenshots, theme palette, API contract, logo). The first implementation task is to scaffold the component. Do not assume a `package.json`, build tooling, or test runner exists; check before referencing commands.
+The component is **built and working**, delivered through a demo host (ADR-0005). Two source trees:
+
+- `src/Tok/` — the portable component, in library layout: `Tok.vue` (parent) + `SubComponents/` (all child SFCs, flat) + `services/` (all logic, no `.vue`) + `theme/tokens.js` + `styles/_tokens.scss`. Copied into Трансфера — and into the shared component library — as is. See `src/Tok/README.md` and ADR-0008.
+- `src/demo/` — the stand that hosts it. Never imported from `src/Tok/`.
+
+Inside `src/Tok/` **only relative imports** are allowed (no `@/…`): the folder lands in projects where the `@` alias may not exist. Enforced by ESLint (`overrides` for `src/Tok/**`) and by `tests/unit/tok-boundary.spec.js`, which also guards the layout itself.
+
+Tests live in `tests/unit/` — never inside `src/Tok/`.
 
 ## What is being built
 
 **Tok** — an AI-assistant chat component embedded into **Трансфера**, an energy-retail (энергосбыт) platform. It is a slide-out panel, not a standalone app: it must drop into the existing Трансфера Vue 2 application.
 
-The authoritative brief is `docs/Задача.txt` (Russian, dictated). Read it before any UI work — it contains explicit requirements that are easy to get wrong (panel corner radii, rotation axis of the loader sparkles, which parts of the Figma mockups are *not* wanted).
+The authoritative brief is `docs/Задача.txt` (Russian, dictated). Read it before any UI work — it contains explicit requirements that are easy to get wrong (panel corner radii, which parts of the Figma mockups are *not* wanted). Later rounds of customer notes — `docs/Доработки и корректировки 1.txt` and `2.txt` — **override** it where they disagree; the newest note wins.
 
 Product scope (`docs/На какие вопросы хотим отвечать в Ток.png`): cost analysis over energy contracts — tariffs (`cost`), consumption (`volume`), and price (`price`), each answerable as a single value for a period, a dynamics chart, or a period-over-period percentage delta. Answers are scoped by contract + date range.
 
@@ -66,7 +73,8 @@ From `docs/Задача.txt` and `docs/referencies from FIGMA/`:
 - **Panel**: slides in from the right over a dimming overlay. Left corners rounded, **right edge square** — it reads as a curtain flush to the viewport edge, not a floating card.
 - **Empty state**: Tok logo (`docs/Logo.svg`), greeting, and a stack of suggested-question chips.
 - **Composer**: single-line input with a microphone (voice input has its own in-progress state — see `В процессе набора аудио.png`) and a send button that activates when there is text.
-- **Loading**: sparkles rotating **about the Z axis** (in-plane spin — explicitly *not* about the vertical axis) beside a rotating caption. Author 5–10 playful but data-agnostic Russian phrases that cycle (the brief's own examples: «Думаю…», «Шуршу по данным Трансферы…», «Нужно ещё немного подумать…»). Keep it tasteful and non-irritating; do not make the copy imply specific data lookups.
+- **Loading**: sparkles rotating **about the vertical axis** (`rotateY`, with `perspective` on the badge — without it the spin degenerates into a horizontal squash) beside a rotating caption. The original brief asked for a Z-axis in-plane spin; «Доработки и корректировки 2», п. 4 overrides it.
+- **Loading captions**: a **scripted** sequence, not a bag of lines — the rotator walks the list top to bottom and then cycles only the last `TAIL_SIZE` phrases, so «Почти готово…» never falls back to «Думаю…». Phrases naming the *process* are wanted («Ищу по Трансфере…», «Анализирую данные…» — the customer's own wording in «Доработки 2», п. 7). Phrases naming *domain entities* (договор, тариф, объём, стоимость, счёт, киловатт) stay forbidden: the set cycles regardless of the question and would start lying. Enforced by `tests/unit/tok-loader.spec.js`.
 - **Explicitly out of scope**: the "не нашли ответа, напишите в службу поддержки" support-fallback line visible in several mockups.
 
 Figma source (mobile UI lib): https://www.figma.com/design/9AIcjmWJolvYfX2mlkaRJI/UI-LIB-Mobile?node-id=1447-24457

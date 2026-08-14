@@ -11,9 +11,9 @@ import {
   STORAGE_KEY_PREFIX,
   STORAGE_VERSION,
   storageKey,
-} from '@/tok/store/persistence';
-import { createTokStore } from '@/tok/store';
-import { MESSAGE_AUTHOR, REPLY_KIND, WORKFLOW_STATUS } from '@/tok/api/contract';
+} from '@/Tok/services/store/persistence';
+import { createTokStore } from '@/Tok/services/store';
+import { MESSAGE_AUTHOR, REPLY_KIND, WORKFLOW_STATUS } from '@/Tok/services/api/contract';
 import { createControlledApi, createInstantApi, flush, mountPanel } from './support/tok';
 
 const NOW = new Date('2026-08-12T10:00:00Z').getTime();

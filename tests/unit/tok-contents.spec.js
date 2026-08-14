@@ -6,16 +6,13 @@
  */
 import { mount } from '@vue/test-utils';
 
-import TokContents from '@/tok/components/contents/TokContents.vue';
-import TokContentTable from '@/tok/components/contents/TokContentTable.vue';
-import {
-  CONTENT_WARNING_PREFIX,
-  resetMissingRendererWarnings,
-} from '@/tok/components/contents/warn';
-import { CONTENT_TYPE, REPLY_KIND, WORKFLOW_STATUS } from '@/tok/api/contract';
-import { findFixtureById } from '@/tok/api/mock/fixtures';
-import { answerToText, contentsToText } from '@/tok/utils/answerText';
-import { formatValue } from '@/tok/utils/format';
+import TokContents from '@/Tok/SubComponents/TokContents.vue';
+import TokContentTable from '@/Tok/SubComponents/TokContentTable.vue';
+import { CONTENT_WARNING_PREFIX, resetMissingRendererWarnings } from '@/Tok/services/warn';
+import { CONTENT_TYPE, REPLY_KIND, WORKFLOW_STATUS } from '@/Tok/services/api/contract';
+import { findFixtureById } from '@/Tok/services/api/mock/fixtures';
+import { answerToText, contentsToText } from '@/Tok/services/utils/answerText';
+import { formatValue } from '@/Tok/services/utils/format';
 import { createControlledApi, flush, mountPanel } from './support/tok';
 
 function contentsOf(fixtureId) {

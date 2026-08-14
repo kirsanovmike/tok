@@ -9,12 +9,12 @@
     <DemoFooter />
 
     <!-- Ток встраивается в хост одной строкой: всё остальное он делает сам. -->
-    <TokApp :config="tokConfig" />
+    <Tok :config="tokConfig" />
   </v-app>
 </template>
 
 <script>
-import { TokApp } from '@/tok';
+import { Tok } from '@/Tok';
 
 import DemoHeader from '@/demo/components/DemoHeader.vue';
 import DemoFooter from '@/demo/components/DemoFooter.vue';
@@ -24,7 +24,7 @@ import { createDemoTokConfig } from '@/demo/tokConfig';
 export default {
   name: 'DemoApp',
 
-  components: { DemoHeader, DemoFooter, TokApp },
+  components: { DemoHeader, DemoFooter, Tok },
 
   data() {
     return {

@@ -10,19 +10,19 @@ import path from 'path';
 
 import { mount } from '@vue/test-utils';
 
-import TokComposer from '@/tok/components/TokComposer.vue';
-import TokIcon from '@/tok/components/icons/TokIcon.vue';
+import TokComposer from '@/Tok/SubComponents/TokComposer.vue';
+import TokIcon from '@/Tok/SubComponents/TokIcon.vue';
 import {
   COMPOSER_MAX_HEIGHT,
   COMPOSER_MIN_HEIGHT,
   isScrollable,
   nextTextareaHeight,
-} from '@/tok/utils/autoGrow';
+} from '@/Tok/services/utils/autoGrow';
 
 // jsdom не считает layout: выравнивание проверяется по исходнику компонента —
 // так же, как в tests/unit/tok-loader.spec.js.
 const SOURCE = fs.readFileSync(
-  path.resolve(__dirname, '../../src/tok/components/TokComposer.vue'),
+  path.resolve(__dirname, '../../src/Tok/SubComponents/TokComposer.vue'),
   'utf8',
 );
 

@@ -19,9 +19,9 @@ import {
   isKnownReplyKind,
   isKnownWorkflowStatus,
   normalizeResponse,
-} from '@/tok/api/contract';
+} from '@/Tok/services/api/contract';
 
-const COMPONENTS_DIR = path.resolve(__dirname, '../../src/tok/components');
+const COMPONENTS_DIR = path.resolve(__dirname, '../../src/Tok/SubComponents');
 
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).reduce((acc, entry) => {

@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import '@mdi/font/css/materialdesignicons.css';
 
-import { installTok } from '@/tok';
+import { installTok } from '@/Tok';
 
 import App from '@/demo/App.vue';
 import vuetify from '@/demo/plugins/vuetify';

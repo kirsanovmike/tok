@@ -7,7 +7,7 @@ module.exports = {
       scss: {
         // Токены Тока доступны в каждом SFC без ручного @import.
         // Файл не порождает CSS — только функции, миксины и переменные.
-        additionalData: '@import "@/tok/styles/_tokens.scss";',
+        additionalData: '@import "@/Tok/styles/_tokens.scss";',
       },
     },
   },

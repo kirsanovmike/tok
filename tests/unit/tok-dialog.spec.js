@@ -1,10 +1,10 @@
 /**
  * Фаза 5 — диалог: пустой экран, лента, композер, отражение workflow, копирование.
  */
-import { REPLY_KIND, WORKFLOW_STATUS } from '@/tok/api/contract';
-import { SUGGESTIONS } from '@/tok/constants/suggestions';
-import { CONFIRM_TEXT } from '@/tok/store/conversation';
-import { createTokStore } from '@/tok/store';
+import { REPLY_KIND, WORKFLOW_STATUS } from '@/Tok/services/api/contract';
+import { SUGGESTIONS } from '@/Tok/services/constants/suggestions';
+import { CONFIRM_TEXT } from '@/Tok/services/store/conversation';
+import { createTokStore } from '@/Tok/services/store';
 import { createControlledApi, createFakeVoice, flush, mountPanel } from './support/tok';
 
 function setup(config) {

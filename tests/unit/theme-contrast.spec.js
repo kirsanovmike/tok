@@ -10,7 +10,7 @@
  * фоне» known только из компонентов, и подмена её эвристикой сделала бы тест
  * зелёным на неверных данных.
  */
-import tokTokens from '@/tok/theme/tokens';
+import tokTokens from '@/Tok/theme/tokens';
 
 const AA_NORMAL = 4.5;
 const AA_LARGE = 3;

@@ -3,7 +3,7 @@ import Vuetify from 'vuetify';
 import VueRouter from 'vue-router';
 import { mount, createLocalVue } from '@vue/test-utils';
 
-import { installTok } from '@/tok';
+import { installTok } from '@/Tok';
 import App from '@/demo/App.vue';
 import DemoDashboard from '@/demo/views/DemoDashboard.vue';
 import { THEME_STORAGE_KEY, themes } from '@/demo/theme';

@@ -20,8 +20,8 @@ jest.mock('axios', () => {
 /* eslint-disable import/first */
 import axios from 'axios';
 
-import { createHttpAssistantClient } from '@/tok/api/httpClient';
-import { createTokConfig } from '@/tok/config';
+import { createHttpAssistantClient } from '@/Tok/services/api/httpClient';
+import { createTokConfig } from '@/Tok/services/config';
 /* eslint-enable import/first */
 
 function createClient(overrides) {
