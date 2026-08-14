@@ -41,6 +41,42 @@
   background-image: linear-gradient($angle, #{tok-color(gradient-from)} 0%, #{tok-color(gradient-to)} 100%);
 }
 
+// Толщина полосы прокрутки. Одно место на всю папку: лента, поле ввода, таблицы.
+$tok-scrollbar-size: 6px;
+
+/// Тонкая полоса прокрутки: вдвое тоньше дефолтной и приглушённого цвета.
+///
+/// Дефолт WebKit — 12–15px тёмно-серого; в панели шириной 520px это заметная
+/// вертикальная линия, которая спорит с содержимым (пункт 2 постановки
+/// «Доработки 3»). Firefox настраивается парой `scrollbar-width`/`scrollbar-color`,
+/// WebKit — псевдоэлементами: нужны оба набора, иначе половина браузеров
+/// останется с дефолтом.
+///
+/// Дорожка прозрачная намеренно: видимая колея на светлой панели читается как
+/// граница блока.
+@mixin tok-thin-scrollbar($size: $tok-scrollbar-size) {
+  scrollbar-width: thin;
+  scrollbar-color: tok-color(border-strong) transparent;
+
+  &::-webkit-scrollbar {
+    width: $size;
+    height: $size;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: tok-color(border-strong);
+    border-radius: $size;
+  }
+
+  &:hover::-webkit-scrollbar-thumb {
+    background-color: tok-color(text-muted);
+  }
+}
+
 // Скругления панели: левые углы скруглены, правый край строго прямой («шторка»).
 $tok-panel-radius: 24px;
 $tok-radius-lg: 20px;

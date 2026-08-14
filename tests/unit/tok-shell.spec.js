@@ -19,6 +19,11 @@ const PANEL_SOURCE = fs.readFileSync(
   'utf8',
 );
 
+const TOK_DIR = path.resolve(__dirname, '../../src/Tok');
+const FEED_SOURCE = fs.readFileSync(path.join(TOK_DIR, 'SubComponents/TokMessageList.vue'), 'utf8');
+const TOKENS_SCSS = fs.readFileSync(path.join(TOK_DIR, 'styles/_tokens.scss'), 'utf8');
+const EMPTY_SOURCE = fs.readFileSync(path.join(TOK_DIR, 'SubComponents/TokEmptyState.vue'), 'utf8');
+
 function mountApp() {
   const localVue = createLocalVue();
   installTok(localVue);
@@ -211,6 +216,37 @@ describe('оболочка Тока', () => {
       expect(document.activeElement).toBe(entry);
 
       wrapper.destroy();
+    });
+  });
+
+  describe('полоса прокрутки ленты', () => {
+    it('прокручиваемый элемент дотянут до края панели: отступов у тела панели нет', () => {
+      const body = PANEL_SOURCE.slice(PANEL_SOURCE.indexOf('&__body {'));
+
+      // Отступы переехали на детей — иначе полоса прокрутки висит в 24px от края.
+      // Окно 400, а не 200: объяснение этого решения живёт прямо в блоке.
+      expect(body.slice(0, 400)).toContain('padding: 0;');
+    });
+
+    it('отступы держат сами дети — и лента, и пустой экран', () => {
+      const feed = FEED_SOURCE.slice(FEED_SOURCE.indexOf('.tok-feed {'));
+
+      expect(feed.slice(0, 400)).toContain('box-sizing: border-box;');
+      expect(feed.slice(0, 400)).toContain('padding: 0 $tok-space-md 0 $tok-space-lg;');
+      expect(EMPTY_SOURCE).toContain('padding: 0 $tok-space-lg;');
+    });
+
+    it('лента красит полосу тонким миксином, а не дефолтом браузера', () => {
+      expect(FEED_SOURCE).toContain('@include tok-thin-scrollbar;');
+    });
+
+    it('миксин тонкой полосы есть, он вдвое тоньше дефолта и приглушённого цвета', () => {
+      expect(TOKENS_SCSS).toContain('$tok-scrollbar-size: 6px;');
+      expect(TOKENS_SCSS).toContain('@mixin tok-thin-scrollbar');
+      // Firefox настраивается парой свойств, WebKit — псевдоэлементами: нужны оба.
+      expect(TOKENS_SCSS).toContain('scrollbar-width: thin;');
+      expect(TOKENS_SCSS).toContain('&::-webkit-scrollbar-thumb {');
+      expect(TOKENS_SCSS).toContain('tok-color(border-strong)');
     });
   });
 });

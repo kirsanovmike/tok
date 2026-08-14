@@ -52,8 +52,11 @@ export default {
 <style lang="scss">
 .tok-empty {
   display: flex;
+  // Отступы свои: у тела панели их нет — см. комментарий в TokPanel.vue.
+  box-sizing: border-box;
   flex-direction: column;
   min-height: 100%;
+  padding: 0 $tok-space-lg;
 
   &__hello {
     margin: 0 0 $tok-space-xs;

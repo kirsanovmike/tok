@@ -82,8 +82,19 @@ export default {
 
 <style lang="scss">
 .tok-feed {
+  // `border-box` явно: у ленты есть и `height: 100%`, и отступы, а сброса
+  // `box-sizing` в чужом проекте может не оказаться — папка едет как есть.
+  box-sizing: border-box;
   height: 100%;
+  // Справа меньше, чем слева: недостающие пиксели добирает сама полоса
+  // прокрутки — 16px отступа плюс 6px полосы дают те же оптические 24px.
+  padding: 0 $tok-space-md 0 $tok-space-lg;
   overflow-y: auto;
+  // Докрутив ленту до конца, человек не должен «протолкнуть» прокрутку в
+  // страницу хоста.
+  overscroll-behavior: contain;
+
+  @include tok-thin-scrollbar;
 
   &__list {
     display: flex;
