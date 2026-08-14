@@ -36,7 +36,11 @@
       </button>
     </div>
 
-    <div v-else class="tok-composer__field">
+    <div
+      v-else
+      class="tok-composer__field"
+      :class="{ 'tok-composer__field--multiline': multiline }"
+    >
       <button
         v-if="value && !blocked"
         type="button"
@@ -104,7 +108,7 @@
 // services
 import { createVoiceSession, VOICE_STATE } from '../services/voice/session';
 import { describeVoiceError, isVoiceSupported } from '../services/voice/recorder';
-import { isScrollable, nextTextareaHeight } from '../services/utils/autoGrow';
+import { isMultiline, isScrollable, nextTextareaHeight } from '../services/utils/autoGrow';
 // components
 import TokIcon from './TokIcon.vue';
 
@@ -166,6 +170,8 @@ export default {
       voiceError: '',
       /* Длительность записи в секундах. */
       elapsed: 0,
+      /* Текст перерос одну строку — кнопки уходят в нижний ряд. */
+      multiline: false,
     };
   },
 
@@ -241,8 +247,14 @@ export default {
       if (!field) return;
 
       field.style.height = 'auto';
-      field.style.height = `${nextTextareaHeight(field.scrollHeight)}px`;
-      field.style.overflowY = isScrollable(field.scrollHeight) ? 'auto' : 'hidden';
+      // Измеряем один раз и по этому же числу решаем всё остальное: повторное
+      // чтение `scrollHeight` после присвоения высоты вернуло бы уже
+      // ограниченное значение.
+      const measured = field.scrollHeight;
+
+      field.style.height = `${nextTextareaHeight(measured)}px`;
+      field.style.overflowY = isScrollable(measured) ? 'auto' : 'hidden';
+      this.multiline = isMultiline(measured);
     },
 
     /** Подставить текст в поле — из чипа-подсказки или из расшифровки. */
@@ -357,11 +369,15 @@ export default {
   }
 
   &__field {
-    display: flex;
-    // По нижнему краю: поле растёт вверх, кнопки не уезжают к его середине.
-    align-items: flex-end;
+    // Грид, а не флекс: две раскладки из референсов отличаются только строкой
+    // `grid-template-areas`, при этом порядок детей в DOM один и тот же —
+    // `textarea` не перемонтируется и не теряет каретку.
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: 'clear input mic send';
+    align-items: center;
     gap: $tok-space-sm;
-    padding: 6px 6px 6px $tok-space-md;
+    padding: 6px 6px 6px $tok-space-sm;
     background-color: tok-color(surface);
     border: 1px solid tok-color(border);
     border-radius: 28px;
@@ -381,9 +397,25 @@ export default {
       box-shadow: 0 0 0 3px tok-color(accent-soft);
     }
 
-    // В состоянии записи поле не растёт: выравнивать нечего, и общий `flex-end`
-    // только роняет надпись ниже центров иконок. Здесь — строго по центру.
+    // Много текста — раскладка по референсу `Референ на скролл и поле ввода
+    // коргда много текста.png`: поле во всю ширину сверху, все кнопки в нижнем
+    // ряду. Очистка слева, микрофон и отправка справа — пункт 3 постановки.
+    &--multiline {
+      grid-template-areas:
+        'input input input input'
+        'clear . mic send';
+      align-items: end;
+      row-gap: $tok-space-sm;
+      padding: $tok-space-sm;
+      // Таблетка уместна на одной строке; у выросшего на несколько строк поля
+      // она съедает углы текста — прямоугольник со скруглением, как в референсе.
+      border-radius: $tok-radius-lg;
+    }
+
+    // В состоянии записи поле не растёт: выравнивать нечего, и раскладка в
+    // четыре колонки ему не нужна — отмена слева, надпись, остановка справа.
     &--voice {
+      display: flex;
       align-items: center;
       padding-left: 6px;
     }
@@ -394,13 +426,13 @@ export default {
   }
 
   &__input {
-    flex: 1 1 auto;
+    grid-area: input;
     min-width: 0;
     // База — одна строка (см. COMPOSER_MIN_HEIGHT в utils/autoGrow.js).
     // Высота ниже переопределяется инлайном из `resize()`; здесь она нужна, чтобы
     // поле не мигало полной высотой до первого измерения.
     height: 32px;
-    max-height: 128px;
+    max-height: 160px;
     padding: 6px 0;
     overflow-y: hidden;
     color: tok-color(text);
@@ -413,15 +445,26 @@ export default {
     // Ручку изменения размера убираем: высотой управляет `resize()`.
     resize: none;
 
+    // Тонкая полоса внутри поля — по референсу: она прижата к правому краю
+    // поля и не спорит с текстом. 4px вместо общих 6px: полоса живёт внутри
+    // рамки поля, а не по краю панели.
+    @include tok-thin-scrollbar(4px);
+
     &::placeholder {
       color: tok-color(text-muted);
     }
   }
 
+  // В многострочной раскладке поле занимает всю ширину: текст отодвигается от
+  // рамки, а справа освобождается место под собственную полосу прокрутки.
+  &__field--multiline &__input {
+    padding-right: $tok-space-sm;
+    padding-left: $tok-space-sm;
+  }
+
   &__clear,
   &__mic {
     display: flex;
-    flex: none;
     align-items: center;
     justify-content: center;
     width: 32px;
@@ -446,16 +489,16 @@ export default {
   }
 
   &__clear {
-    order: -1;
-    // По центру поля, а не по его низу: при выросшем на несколько строк вводе
-    // крестик обязан оставаться посередине фона (пункт 2 постановки).
-    align-self: center;
-    margin-left: -8px;
+    grid-area: clear;
+  }
+
+  &__mic {
+    grid-area: mic;
   }
 
   &__send {
     display: flex;
-    flex: none;
+    grid-area: send;
     align-items: center;
     justify-content: center;
     width: 32px;

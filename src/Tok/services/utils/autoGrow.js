@@ -12,8 +12,13 @@
 /** Одна строка. Базовая высота поля, ниже которой оно не схлопывается. */
 export const COMPOSER_MIN_HEIGHT = 32;
 
-/** Примерно шесть строк. Дальше поле не растёт, а прокручивается внутри себя. */
-export const COMPOSER_MAX_HEIGHT = 128;
+/**
+ * Примерно восемь строк. Дальше поле не растёт, а прокручивается внутри себя.
+ * Восемь, а не шесть: столько показывает референс `docs/Референ на скролл и поле
+ * ввода коргда много текста.png`. Выше поднимать нельзя — композер вместе с
+ * рядом кнопок съест четверть панели.
+ */
+export const COMPOSER_MAX_HEIGHT = 160;
 
 /**
  * @param {number} scrollHeight — измеренная высота содержимого поля
@@ -35,6 +40,21 @@ export function nextTextareaHeight(scrollHeight, min, max) {
 export function isScrollable(scrollHeight, max) {
   const ceiling = typeof max === 'number' ? max : COMPOSER_MAX_HEIGHT;
   return Number.isFinite(scrollHeight) && scrollHeight > ceiling;
+}
+
+/**
+ * Переросло ли содержимое одну строку.
+ *
+ * От этого зависит раскладка композера: пока строка одна, кнопки стоят в том же
+ * ряду, что и поле; как только текст перенёсся — уезжают в нижний ряд
+ * (пункты 3 и 4 постановки «Доработки 3»).
+ *
+ * Незамеренное поле (jsdom, скрытый контейнер) многострочным не считается:
+ * раскладка не имеет права прыгать на пустом измерении.
+ */
+export function isMultiline(scrollHeight, min) {
+  const floor = typeof min === 'number' ? min : COMPOSER_MIN_HEIGHT;
+  return Number.isFinite(scrollHeight) && scrollHeight > floor;
 }
 
 export default nextTextareaHeight;
