@@ -9,6 +9,9 @@
  * (см. заплатки в `support/jsdomSvg.js`), поэтому геометрия, подписи и заливка —
  * визуальная сверка на стенде.
  */
+import fs from 'fs';
+import path from 'path';
+
 import * as am4core from '@amcharts/amcharts4/core';
 import { mount } from '@vue/test-utils';
 
@@ -21,6 +24,11 @@ import { CONTENT_TYPE } from '@/Tok/services/api/contract';
 import { findFixtureById } from '@/Tok/services/api/mock/fixtures';
 import tokens from '@/Tok/theme/tokens';
 import { createControlledApi, flush, mountPanel } from './support/tok';
+
+const CHART_SOURCE = fs.readFileSync(
+  path.resolve(__dirname, '../../src/Tok/SubComponents/TokContentChart.vue'),
+  'utf8',
+);
 
 function blockOf(fixtureId) {
   return findFixtureById(fixtureId).response.contents[0];
@@ -193,6 +201,22 @@ describe('графики', () => {
       expect(chart.yAxes.getIndex(0).title.text).toBeFalsy();
       // Имя единственного ряда при этом никуда не делось — оно над холстом.
       expect(wrapper.find('.tok-chart__caption').text()).toBe('Объём потребления, кВт·ч');
+
+      wrapper.destroy();
+    });
+
+    it('подпись отделена от холста, а не приклеена к нему', () => {
+      const caption = CHART_SOURCE.slice(CHART_SOURCE.indexOf('&__caption {'));
+
+      // 4px не хватало: верхняя подпись оси значений наезжала на текст.
+      // Окно 300, а не 200: объяснение этого решения живёт прямо в блоке.
+      expect(caption.slice(0, 300)).toContain('margin: 0 0 $tok-space-sm;');
+    });
+
+    it('холст держит собственный верхний отступ', () => {
+      const wrapper = mountChart(blockOf('line'));
+
+      expect(wrapper.vm.chart.paddingTop).toBe(8);
 
       wrapper.destroy();
     });

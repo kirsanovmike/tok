@@ -205,7 +205,10 @@ function createBaseChart(element, ChartClass) {
   // Не 0: крайний хват зум-скроллбара выступает за область рисования и при нулевом
   // отступе срезался краем панели (docs/charterr.png).
   chart.paddingRight = 6;
-  chart.paddingTop = 4;
+  // 8px: в этих пикселях рисуется верхняя подпись оси значений, и при 4px она
+  // вплотную подходила к HTML-подписи над холстом (пункт 6 постановки
+  // «Доработки 3»).
+  chart.paddingTop = 8;
   chart.paddingBottom = 0;
 
   return chart;

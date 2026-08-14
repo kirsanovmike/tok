@@ -209,7 +209,9 @@ export default {
   }
 
   &__caption {
-    margin: 0 0 $tok-space-xs;
+    // 8px, а не 4: верхняя подпись оси значений рисуется у самого края холста и
+    // при 4px наезжала на текст подписи (пункт 6 постановки «Доработки 3»).
+    margin: 0 0 $tok-space-sm;
     color: tok-color(text-muted);
     font-size: 12px;
     line-height: 1.3;
