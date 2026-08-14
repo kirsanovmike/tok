@@ -12,6 +12,7 @@ import { createLocalVue, mount } from '@vue/test-utils';
 
 import { installTok, Tok } from '@/Tok';
 import { resetPageScrollLock } from '@/Tok/services/utils/scrollLock';
+import { PANEL_MIN_WIDTH, PANEL_WIDTH_STEP } from '@/Tok/services/utils/panelWidth';
 import { flush, mountPanel } from './support/tok';
 
 const PANEL_SOURCE = fs.readFileSync(
@@ -177,13 +178,19 @@ describe('оболочка Тока', () => {
       const wrapper = mountPanel({ attachTo: anchor });
       await flush();
 
-      const focusable = wrapper.element.querySelectorAll('button, input');
+      // Ручка изменения ширины — тоже фокусируемый элемент (`[tabindex="0"]`),
+      // и она стоит первой в панели: селектор обязан её учитывать, иначе
+      // «первый внутри панели» окажется не тем, на что попадает Tab.
+      const focusable = wrapper.element.querySelectorAll(
+        'button, input, [tabindex]:not([tabindex="-1"])',
+      );
       const last = focusable[focusable.length - 1];
       last.focus();
 
       document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
 
       // С последнего элемента фокус ушёл на первый внутри панели, а не на кнопку хоста.
+      expect(focusable[0].classList.contains('tok-resize-handle')).toBe(true);
       expect(document.activeElement).toBe(focusable[0]);
       expect(document.activeElement).not.toBe(outside);
 
@@ -247,6 +254,122 @@ describe('оболочка Тока', () => {
       expect(TOKENS_SCSS).toContain('scrollbar-width: thin;');
       expect(TOKENS_SCSS).toContain('&::-webkit-scrollbar-thumb {');
       expect(TOKENS_SCSS).toContain('tok-color(border-strong)');
+    });
+  });
+
+  describe('ширина панели', () => {
+    /** jsdom не меняет innerWidth сам — подменяем его на время теста. */
+    function setViewport(width) {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+      window.dispatchEvent(new Event('resize'));
+    }
+
+    afterEach(() => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+    });
+
+    it('минимальная ширина одна и та же в SCSS и в JS', () => {
+      expect(TOKENS_SCSS).toContain(`$tok-panel-min-width: ${PANEL_MIN_WIDTH}px;`);
+      expect(PANEL_SOURCE).toContain('width: $tok-panel-min-width;');
+      // Планшетный медиазапрос снят: 60vw с минимумом 420px противоречит новому
+      // минимуму 520px.
+      expect(PANEL_SOURCE).not.toContain('max-width: 959px');
+    });
+
+    it('до перетаскивания инлайновой ширины нет — её задаёт таблица стилей', () => {
+      const wrapper = mountPanel();
+      const panel = wrapper.find('[data-tok-panel]');
+
+      expect(wrapper.vm.width).toBeNull();
+      expect(panel.attributes('style') || '').not.toContain('width');
+
+      wrapper.destroy();
+    });
+
+    it('перетаскивание ручки расширяет панель влево', async () => {
+      setViewport(1024);
+      const wrapper = mountPanel();
+      const handle = wrapper.find('.tok-resize-handle');
+
+      handle.trigger('pointerdown', { clientX: 504, pointerId: 1 });
+      window.dispatchEvent(new MouseEvent('pointermove', { clientX: 324 }));
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.vm.width).toBe(700);
+      expect(wrapper.find('[data-tok-panel]').attributes('style')).toContain('width: 700px');
+
+      window.dispatchEvent(new MouseEvent('pointerup'));
+      wrapper.destroy();
+    });
+
+    it('шире экрана не растягивается и на всю ширину теряет скругления', async () => {
+      setViewport(1024);
+      const wrapper = mountPanel();
+      const handle = wrapper.find('.tok-resize-handle');
+
+      handle.trigger('pointerdown', { clientX: 504, pointerId: 1 });
+      window.dispatchEvent(new MouseEvent('pointermove', { clientX: -300 }));
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.vm.width).toBe(1024);
+      expect(wrapper.find('.tok-panel--full').exists()).toBe(true);
+
+      window.dispatchEvent(new MouseEvent('pointerup'));
+      wrapper.destroy();
+    });
+
+    it('клавиатура двигает край: стрелки, Home и End', async () => {
+      setViewport(1024);
+      const wrapper = mountPanel();
+      const handle = wrapper.find('.tok-resize-handle');
+
+      handle.trigger('keydown', { key: 'ArrowLeft' });
+      await wrapper.vm.$nextTick();
+      expect(wrapper.vm.width).toBe(PANEL_MIN_WIDTH + PANEL_WIDTH_STEP);
+
+      handle.trigger('keydown', { key: 'ArrowRight' });
+      await wrapper.vm.$nextTick();
+      expect(wrapper.vm.width).toBe(PANEL_MIN_WIDTH);
+
+      handle.trigger('keydown', { key: 'End' });
+      await wrapper.vm.$nextTick();
+      expect(wrapper.vm.width).toBe(1024);
+
+      handle.trigger('keydown', { key: 'Home' });
+      await wrapper.vm.$nextTick();
+      expect(wrapper.vm.width).toBe(PANEL_MIN_WIDTH);
+
+      wrapper.destroy();
+    });
+
+    it('ручка — window splitter для скринридера', () => {
+      const wrapper = mountPanel();
+      const handle = wrapper.find('.tok-resize-handle');
+
+      expect(handle.attributes('role')).toBe('separator');
+      expect(handle.attributes('aria-orientation')).toBe('vertical');
+      expect(handle.attributes('tabindex')).toBe('0');
+      expect(handle.attributes('aria-valuemin')).toBe(String(PANEL_MIN_WIDTH));
+
+      wrapper.destroy();
+    });
+
+    it('на узком окне ручки нет, а набранная ширина снимается', async () => {
+      setViewport(1024);
+      const wrapper = mountPanel();
+
+      wrapper.find('.tok-resize-handle').trigger('keydown', { key: 'End' });
+      await wrapper.vm.$nextTick();
+      expect(wrapper.vm.width).toBe(1024);
+
+      setViewport(500);
+      await wrapper.vm.$nextTick();
+
+      // Инлайновая ширина сильнее медиазапроса `100vw` — её обязательно снять.
+      expect(wrapper.vm.width).toBeNull();
+      expect(wrapper.find('.tok-resize-handle').exists()).toBe(false);
+
+      wrapper.destroy();
     });
   });
 });

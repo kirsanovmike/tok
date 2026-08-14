@@ -79,6 +79,11 @@ $tok-scrollbar-size: 6px;
 
 // Скругления панели: левые углы скруглены, правый край строго прямой («шторка»).
 $tok-panel-radius: 24px;
+
+// Минимальная и стартовая ширина шторки. Обязана совпадать с PANEL_MIN_WIDTH
+// в services/utils/panelWidth.js — совпадение проверяет тест.
+$tok-panel-min-width: 520px;
+
 $tok-radius-lg: 20px;
 $tok-radius-md: 16px;
 $tok-radius-sm: 12px;

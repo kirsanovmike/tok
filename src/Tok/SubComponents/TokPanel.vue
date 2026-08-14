@@ -19,11 +19,23 @@
         v-if="open"
         ref="panel"
         class="tok-panel"
+        :class="panelClass"
+        :style="panelStyle"
         data-tok-panel
         role="dialog"
         aria-modal="true"
         aria-label="Ток — ассистент Трансферы"
       >
+        <TokResizeHandle
+          v-if="canResize"
+          :width="currentWidth"
+          :min="minWidth"
+          :max="maxWidth"
+          @resize="setWidth"
+          @dragstart="startResizing"
+          @dragend="stopResizing"
+        />
+
         <header class="tok-panel__header">
           <TokLogo :width="60" :height="21" />
 
@@ -104,6 +116,12 @@
 import tokStoreMixin from '../services/tokStore';
 import { createFocusTrap } from '../services/utils/focusTrap';
 import { lockPageScroll, unlockPageScroll } from '../services/utils/scrollLock';
+import {
+  PANEL_MIN_WIDTH,
+  clampPanelWidth,
+  isPanelResizable,
+  panelMaxWidth,
+} from '../services/utils/panelWidth';
 // components
 import TokLogo from './TokLogo.vue';
 import TokIcon from './TokIcon.vue';
@@ -111,6 +129,7 @@ import TokConfirmMenu from './TokConfirmMenu.vue';
 import TokEmptyState from './TokEmptyState.vue';
 import TokMessageList from './TokMessageList.vue';
 import TokComposer from './TokComposer.vue';
+import TokResizeHandle from './TokResizeHandle.vue';
 
 /** Пояснение под заблокированным вводом: ответ `forbidden` закрывает беседу. */
 const BLOCKED_REASON =
@@ -119,7 +138,15 @@ const BLOCKED_REASON =
 export default {
   name: 'TokPanel',
 
-  components: { TokLogo, TokIcon, TokConfirmMenu, TokEmptyState, TokMessageList, TokComposer },
+  components: {
+    TokLogo,
+    TokIcon,
+    TokConfirmMenu,
+    TokEmptyState,
+    TokMessageList,
+    TokComposer,
+    TokResizeHandle,
+  },
 
   mixins: [tokStoreMixin],
 
@@ -142,6 +169,17 @@ export default {
       blockedReason: BLOCKED_REASON,
       /* Открыт ли вопрос «Очистить беседу?» под корзиной. */
       confirmingReset: false,
+      /* Ширина, заданная перетаскиванием. `null` — ширину задаёт таблица стилей. */
+      width: null,
+      /* Идёт перетаскивание: страница на это время перестаёт выделять текст. */
+      resizing: false,
+      /*
+       * Ширина окна. Держим в состоянии: от неё зависят и потолок, и сама ручка.
+       * Читается сразу здесь, а не только в `mounted()`: иначе первый кадр
+       * рисуется без ручки, и она появляется отдельным тиком — заметным
+       * подмигиванием у левого края.
+       */
+      viewportWidth: typeof window === 'undefined' ? 0 : window.innerWidth,
     };
   },
 
@@ -154,6 +192,44 @@ export default {
     /* Ввод закрыт: беседа упёрлась в ответ `forbidden`. */
     isInputBlocked() {
       return this.tokGetter('isInputBlocked');
+    },
+
+    /* Минимальная ширина панели — она же стартовая. */
+    minWidth() {
+      return PANEL_MIN_WIDTH;
+    },
+
+    /* Потолок ширины: весь экран. */
+    maxWidth() {
+      return panelMaxWidth(this.viewportWidth);
+    },
+
+    /* Ширина, о которой знает ручка: пока не тянули — минимальная. */
+    currentWidth() {
+      return this.width === null ? PANEL_MIN_WIDTH : this.width;
+    },
+
+    /* Есть ли смысл в ручке: на узком окне панель и так во весь экран. */
+    canResize() {
+      return isPanelResizable(this.viewportWidth);
+    },
+
+    /*
+     * Инлайновая ширина появляется только после перетаскивания: пока её нет,
+     * ширину задаёт таблица стилей вместе со всеми медиазапросами. Инлайн
+     * сильнее любого правила, и поставленный «на всякий случай» он сломал бы
+     * полноэкранный режим на телефоне.
+     */
+    panelStyle() {
+      return this.width === null ? null : { width: `${this.width}px` };
+    },
+
+    /* Модификаторы панели: перетаскивание и полноэкранная ширина. */
+    panelClass() {
+      return {
+        'tok-panel--resizing': this.resizing,
+        'tok-panel--full': this.width !== null && this.width >= this.viewportWidth,
+      };
     },
   },
 
@@ -169,11 +245,17 @@ export default {
   },
 
   mounted() {
+    this.readViewport();
+    window.addEventListener('resize', this.readViewport);
+
     // Хост вправе смонтировать панель уже открытой — тогда watcher не сработает.
     if (this.open) this.onOpen();
   },
 
   beforeDestroy() {
+    window.removeEventListener('resize', this.readViewport);
+    this.stopResizing();
+
     // Панель может быть уничтожена открытой (уход со страницы хоста) —
     // страница не должна остаться с заблокированным скроллом.
     if (this.open) {
@@ -214,6 +296,37 @@ export default {
       }
 
       this.$emit('close');
+    },
+
+    /** Запомнить ширину окна и привести к ней ширину панели. */
+    readViewport() {
+      this.viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth;
+
+      // Узкое окно: панель занимает его целиком по медиазапросу, а инлайновая
+      // ширина этот медиазапрос перебила бы — снимаем её.
+      if (!isPanelResizable(this.viewportWidth)) {
+        this.width = null;
+        return;
+      }
+
+      if (this.width !== null) this.setWidth(this.width);
+    },
+
+    /** Поставить ширину, зажатую между минимумом и шириной окна. */
+    setWidth(next) {
+      this.width = clampPanelWidth(next, this.viewportWidth);
+    },
+
+    /** Начало перетаскивания: страница перестаёт выделять текст под курсором. */
+    startResizing() {
+      this.resizing = true;
+      if (typeof document !== 'undefined') document.body.classList.add('tok-resizing');
+    },
+
+    /** Конец перетаскивания. Вызывается и из `beforeDestroy`. */
+    stopResizing() {
+      this.resizing = false;
+      if (typeof document !== 'undefined') document.body.classList.remove('tok-resizing');
     },
 
     /** Чип-подсказка: подставить вопрос в композер, не отправляя. */
@@ -285,12 +398,19 @@ export default {
   z-index: $tok-z-panel;
   display: flex;
   flex-direction: column;
-  width: 480px;
+  // Стартовая ширина — она же минимальная (пункт 7 постановки «Доработки 3»).
+  // Шире её панель растягивают ручкой, и тогда ширину задаёт инлайновый стиль.
+  width: $tok-panel-min-width;
   max-width: 100vw;
   background-color: tok-color(surface);
   // «Шторка»: скруглены только левые углы, правый край строго прямой.
   border-radius: $tok-panel-radius 0 0 $tok-panel-radius;
   box-shadow: -4px 0 28px tok-color(shadow);
+
+  // Раскрыта во весь экран — скруглять нечего: слева тоже край экрана.
+  &--full {
+    border-radius: 0;
+  }
 
   &__header {
     display: flex;
@@ -348,21 +468,22 @@ export default {
   }
 }
 
-// Ширины по постановке. Правый край прижат к viewport на всех.
-@media (max-width: 959px) {
-  .tok-panel {
-    width: 60vw;
-    min-width: 420px;
-  }
-}
-
+// Планшетный медиазапрос (60vw с минимумом 420px) снят: он противоречит
+// минимальной ширине 520px. На узком окне панель по-прежнему во весь экран.
 @media (max-width: 599px) {
   .tok-panel {
     width: 100vw;
-    min-width: 0;
     // На всю ширину скруглять нечего: слева тоже край экрана.
     border-radius: 0;
   }
+}
+
+// Во время перетаскивания страница не должна выделять текст под курсором, а
+// курсор — превращаться в каретку над лентой. Класс вешается на body: указатель
+// во время перетаскивания уходит далеко за пределы панели.
+.tok-resizing {
+  cursor: col-resize;
+  user-select: none;
 }
 
 .tok-panel-enter-active,
