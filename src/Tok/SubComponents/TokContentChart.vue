@@ -165,7 +165,7 @@ export default {
 
 <style lang="scss">
 .tok-chart {
-  // Отступ меньше прежнего: в панели 480px каждые 8px по краям — это 8px,
+  // Отступ меньше прежнего: в панели 520px каждые 8px по краям — это 8px,
   // которых не хватает подписям оси.
   padding: $tok-space-sm $tok-space-sm $tok-space-md;
   overflow: hidden;

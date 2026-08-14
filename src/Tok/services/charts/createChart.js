@@ -108,7 +108,7 @@ function createLegend(palette) {
 }
 
 // Высота шкалы масштаба. Дефолтный `am4core.Scrollbar` занимает около 35px —
-// это треть холста в панели 480px, ради которых его в прошлый раз и прятали
+// это треть холста в панели 520px, ради которых его в прошлый раз и прятали
 // за порогом по количеству точек. 10px помещаются всегда.
 const SCROLLBAR_HEIGHT = 10;
 const SCROLLBAR_GRIP_WIDTH = 14;
@@ -220,7 +220,7 @@ function createXYChart(element, { series, palette, kind }) {
 
   const categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
   categoryAxis.dataFields.category = 'category';
-  // Реже подписи — больше воздуха между ними. В панели 480px три-четыре подписи
+  // Реже подписи — больше воздуха между ними. В панели 520px три-четыре подписи
   // читаются, а восемь сливаются в серую полосу.
   categoryAxis.renderer.minGridDistance = 56;
   // Подпись, которая не влезла, поворачивать некуда — панель узкая; лучше показать
