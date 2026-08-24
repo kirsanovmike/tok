@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The component is **built and working**, delivered through a demo host (ADR-0005). Two source trees:
 
-- `src/Tok/` — the portable component, in library layout: `Tok.vue` (parent) + `SubComponents/` (all child SFCs, flat) + `services/` (all logic, no `.vue`) + `theme/tokens.js` + `styles/_tokens.scss`. Copied into Трансфера — and into the shared component library — as is. See `src/Tok/README.md` and ADR-0008.
+- `src/Tok/` — the portable component, in library layout: `Tok.vue` (parent) + `SubComponents/` (all child SFCs, flat) + `services/` (all logic, no `.vue`) + `theme/tokens.js` + `styles/_tokens.scss`. Copied into Трансфера — and into the shared component library — as is. Хост подключает его одним импортом компонента — плагина установки нет (ADR-0009). See `src/Tok/README.md` and ADR-0008.
 - `src/demo/` — the stand that hosts it. Never imported from `src/Tok/`.
 
 Inside `src/Tok/` **only relative imports** are allowed (no `@/…`): the folder lands in projects where the `@` alias may not exist. Enforced by ESLint (`overrides` for `src/Tok/**`) and by `tests/unit/tok-boundary.spec.js`, which also guards the layout itself.
@@ -30,18 +30,18 @@ Locked by `docs/dependecies.txt` — this is the host application's dependency s
 - **SCSS** (`sass` 1.49), **stylelint** (standard + scss + vue configs), **ESLint** (airbnb + vue + vuetify + prettier)
 - **amCharts 4** (`@amcharts/amcharts4` 4.10.20) for charts — v4, not v5; the API differs completely
 - **axios 0.21.4** for transport, **date-fns** / **date-fns-tz** for dates, **portal-vue** for rendering the panel outside its parent's DOM tree
-- **`@tne-ui/*`** — the in-house design system (`core`, `components`, `sprites`, `notify`, …). Prefer these primitives over hand-rolled or raw Vuetify components; they are what the rest of Трансфера looks like.
+- **`@tne-ui/*`** — in-house design system (`core`, `components`, `sprites`, `notify`, …). `@tne-ui/core` owns Tok's colour tokens (`--v-tok-*`) and the SCSS contract; `@tne-ui/components` is where the component itself ships. See ADR-0009.
 
 Standard Vue CLI 4 scripts once scaffolded: `vue-cli-service serve` / `build` / `lint` / `test:unit`. Single test: `npx vue-cli-service test:unit --testPathPattern <path>` or `-t "<test name>"`.
 
 ## Theming
 
-`docs/theme.txt` holds the host app's **current** Vuetify palettes — `dark:` first, then `light:` — as frozen colour objects (`indigo`, `yellow`, `blue`, `purple`, `red`, `orange`, `green`, `grey`, `shades`, plus `*Deep` variants). Two things to know:
+Tok's colours are CSS custom properties declared by **`@tne-ui/core`**: `var(--v-tok-surface)`, `var(--v-tok-tooltip-text)`, … — the name is `--v-` plus the token key, **no `-base` suffix** (that suffix came from Vuetify 2's theme parser, and Tok no longer goes through it). ADR-0009.
 
-- The palettes are structurally identical; only values differ. Any colour Tok needs must be added to **both**, keeping keys in sync.
-- Values are semantically inverted in dark mode (e.g. `grey.lighten4` is `#F9F9F9` in light and `#FFFFFF` in dark; `shades.white` is `#2A2A2A` in dark). Never hardcode a hex in a component — always go through the palette key, or dark mode breaks.
-
-The light theme can be derived from the Figma screenshots. Dark has no reference; it must be authored. The brief also calls for extending the palette with a gradient.
+- Never hardcode a hex in a component. In SCSS the only way in is `tok-color(<token>)`; in JS it is `theme/tokens.js`. Enforced by `tests/unit/tok-boundary.spec.js`.
+- `src/Tok/theme/tokens.js` holds the values: it is the fallback source for amCharts (`services/charts/palette.js` — SVG drawn from JS cannot read `var(…)`) and for `theme/applyTokTheme.js`, which declares the variables where `@tne-ui/core` is absent (the demo stand, an isolated Storybook preview). It never writes over the library's own declarations.
+- The `light` and `dark` key sets must stay identical — `tests/unit/theme-parity.spec.js`. Contrast floors are pinned by `tests/unit/theme-contrast.spec.js`.
+- `docs/theme.txt` still holds the host's Vuetify palettes; they matter for the demo stand (`host-color()` in `src/demo/styles/_host.scss`), not for Tok.
 
 ## API contract
 

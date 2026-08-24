@@ -30,6 +30,7 @@
 ```
 Tok/
   Tok.vue                  ← родительский компонент
+  Tok.stories.js           ← истории для Storybook 6.2
   index.js                 ← публичный вход папки
   SubComponents/           ← дочерние компоненты, плоским списком
   services/                ← логика и данные, ни одного .vue
@@ -40,7 +41,8 @@ Tok/
 | Путь | Что внутри |
 |---|---|
 | `Tok.vue` | корень: портал в `<body>`, точка входа, панель, создание стора и транспорта |
-| `index.js` | публичный вход: `installTok`, `Tok`, `tokThemeTokens`, константы контракта |
+| `Tok.stories.js` | истории Storybook 6.2: состояния шторки и ответы мока через `fixtureId` |
+| `index.js` | публичный вход: `Tok` (он же default), `tokThemeTokens`, `applyTokTheme`, константы контракта |
 | `SubComponents/` | все дочерние компоненты: оболочка, диалог, блоки ответа, иконки, ручка изменения ширины шторки (`TokResizeHandle.vue`) |
 | `services/index.js` | витрина сервисов: то, чем пользуется `Tok.vue` |
 | `services/config.js` | вся конфигурация: адрес сервиса, провайдер токена, флаги, мок |
@@ -58,35 +60,49 @@ Tok/
 | `services/constants/` | чипы-подсказки и фразы загрузки |
 | `services/utils/` | фокус-ловушка, блокировка скролла, буфер обмена, ротация фраз, форматирование чисел, текст ответа для копирования, высота поля ввода и ширина шторки |
 | `theme/tokens.js` | цвета Тока; **единственное** место с hex внутри папки |
-| `styles/_tokens.scss` | `tok-color()`, `host-color()`, миксин градиента, отступы, слои |
+| `theme/applyTokTheme.js` | запасная раскладка `--v-tok-*` там, где нет `@tne-ui/core` |
+| `styles/_tokens.scss` | копия SCSS-контракта из `@tne-ui/core`: `tok-color()`, миксины, отступы, слои |
 
 ## Как положить в библиотеку
 
-1. Скопировать `src/Tok` целиком в `components/Tok` библиотеки. Правки путей не нужны:
-   внутри папки только относительные импорты.
-2. Подключить `theme/tokens.js` в обе палитры Vuetify — плоскими цветами верхнего уровня
-   (пример ниже, раздел «Подключение»). Наборы ключей `light` и `dark` обязаны совпадать.
-3. Прокинуть `styles/_tokens.scss` в сборку библиотеки — иначе ни один SFC не соберётся:
-   в Vue CLI это `css.loaderOptions.scss.additionalData`, в vite — `css.preprocessorOptions.scss.additionalData`.
+1. Скопировать `src/Tok` целиком в `components/Tok` библиотеки `@tne-ui/components`.
+   Правок путей не нужно: внутри папки только относительные импорты.
+2. Убедиться, что `@tne-ui/core` объявляет переменные `--v-tok-*` — полный список
+   ключей смотреть в `theme/tokens.js` (наборы `light` и `dark` совпадают).
+   Имя переменной — `--v-` плюс ключ: `tok-surface` → `--v-tok-surface`.
+   **Суффикса `-base` быть не должно.**
+3. SCSS-контракт (`tok-color()`, миксины, `$tok-*`) приходит из `@tne-ui/core` —
+   он подключается в библиотеке глобально, отдельных действий не требуется.
+   Копия `styles/_tokens.scss` в этой папке нужна только там, где core нет:
+   стенд, чужая песочница. В `@tne-ui/components` её можно удалить — определения
+   те же самые.
+
+   Если сборка всё-таки падает на `Undefined function tok-color`, партиал не попал
+   в единицу компиляции SFC. Лечится одной строкой:
 
    ```js
    // vue.config.js библиотеки
    css: {
      loaderOptions: {
-       scss: { additionalData: '@import "@/components/Tok/styles/_tokens.scss";' },
+       scss: { additionalData: '@import "~@tne-ui/core/styles/tok";' },
      },
    }
    ```
+
+   Для vite — `css.preprocessorOptions.scss.additionalData`.
 4. Убедиться, что peer-зависимости из таблицы ниже стоят нужных версий.
-5. Для голосового ввода — разложить файлы ffmpeg.wasm (раздел ниже) либо выключить голос
-   флагом `voiceEnabled: false`.
+5. Для голосового ввода — разложить файлы ffmpeg.wasm (раздел ниже) либо выключить
+   голос флагом `voiceEnabled: false`.
+
+Устанавливать плагин не нужно: `portal-vue` зарегистрирован локально в `Tok.vue`
+(ADR-0009).
 
 ## Что нужно от хоста
 
 | Зависимость | Версия | Зачем |
 |---|---|---|
 | `vue` | 2.6.14 | Options API |
-| `vuetify` | 2.6.3 | **только тема**; нужен `theme.options.customProperties: true` |
+| `vuetify` | — | **не нужен**. Тема приходит переменными `--v-tok-*` из `@tne-ui/core` |
 | `vuex` | 3.x | стор беседы (ADR-0006) |
 | `portal-vue` | 2.1.7 | вынос панели в `<body>` |
 | `axios` | 0.21.4 | транспорт |
@@ -122,32 +138,42 @@ npm run prepare:ffmpeg
 
 ## Подключение
 
-```js
-import Vue from 'vue';
-import { installTok, tokThemeTokens } from '@/Tok';
-
-installTok(Vue);
-```
-
-Токены темы вливаются в обе палитры Vuetify плоскими цветами верхнего уровня:
-
-```js
-new Vuetify({
-  theme: {
-    options: { customProperties: true },
-    themes: {
-      light: { ...hostLightPalette, ...tokThemeTokens.light },
-      dark: { ...hostDarkPalette, ...tokThemeTokens.dark },
-    },
-  },
-});
-```
-
-И далее в разметке хоста:
+Ток вставляется в лейаут одной строкой — и появляется во всех SPA, которые этот
+лейаут тянут:
 
 ```vue
-<Tok />
+<script>
+import Tok from '@tne-ui/components/Tok';
+
+export default {
+  components: { Tok },
+};
+</script>
+
+<template>
+  <div class="layout">
+    <router-view />
+    <Tok />
+  </div>
+</template>
 ```
+
+Ни `Vue.use`, ни вливания цветов в тему Vuetify не требуется: переменные
+`--v-tok-*` объявляет `@tne-ui/core`.
+
+### Если `@tne-ui/core` рядом нет
+
+Изолированный просмотр, песочница, чужой стенд — там переменные можно разложить
+из тех же значений:
+
+```js
+import { applyTokTheme } from '@tne-ui/components/Tok';
+
+applyTokTheme('dark'); // или 'light'
+```
+
+Поверх объявлений `@tne-ui/core` функция ничего не пишет — вызов в приложении
+с библиотекой безвреден и бесполезен. Флаг `{ force: true }` снимает эту защиту.
 
 ## Конфигурация
 
@@ -201,21 +227,25 @@ new Vuetify({
 
 ## Цвета
 
-Hex внутри папки допустим **только** в `theme/tokens.js`. Компоненты берут цвета через
-`tok-color()` / `host-color()` из `styles/_tokens.scss`, то есть через CSS-переменные Vuetify,
-которые переключаются вместе с темой. `linear-gradient(` встречается только в `styles/_tokens.scss`
-(миксин `tok-gradient`).
+Hex внутри папки допустим **только** в `theme/tokens.js`. Компоненты берут цвета
+через `tok-color()` из `styles/_tokens.scss`, то есть через CSS-переменные
+`--v-tok-<токен>`, которые объявляет `@tne-ui/core` и переключает вместе с темой.
+`linear-gradient(` встречается только в `styles/_tokens.scss` (миксин `tok-gradient`).
 
-Исключение по механике, но не по правилу — графики: amCharts рисует SVG из JavaScript
-и строку `var(--v-…)` не понимает. `services/charts/palette.js` достаёт **вычисленное** значение
-CSS-переменной из стилей контейнера, а если Vuetify не объявил свой `:root` — берёт то же
-значение прямо из `theme/tokens.js`. Дефолтная палитра amCharts не используется нигде.
+Источник истины по значениям — `@tne-ui/core`. `theme/tokens.js` держит их копию
+и нужен двум местам:
+
+- `theme/applyTokTheme.js` — раскладывает переменные там, где библиотеки нет;
+- `services/charts/palette.js` — amCharts рисует SVG из JavaScript и строку
+  `var(--v-…)` не понимает. Палитра достаёт **вычисленное** значение переменной
+  из стилей контейнера, а если переменных нет — берёт значение прямо из `tokens.js`.
+  Дефолтная палитра amCharts не используется нигде.
 
 ## Точки замены при переносе
 
-От Vuetify Ток берёт **только тему**: ни одного `v-*`-компонента внутри папки нет —
-панель, композер и кнопки собраны на нативных элементах и токенах. Поэтому «слой-обёртка»
-над примитивами (ADR-0001) свёлся к двум местам:
+От Vuetify Ток больше не берёт ничего: ни одного `v-*`-компонента внутри папки нет,
+тема приходит переменными `@tne-ui/core`. Поэтому «слой-обёртка» над примитивами
+(ADR-0001) свёлся к двум местам:
 
 | Что | Файл | Чем заменяется в Трансфере |
 |---|---|---|
