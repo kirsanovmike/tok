@@ -44,6 +44,16 @@ describe('демо-хост', () => {
     warnings.mockRestore();
   });
 
+  it('объявляет переменные Тока на документе: в Трансфере это делает @tne-ui/core', () => {
+    document.documentElement.removeAttribute('style');
+
+    const wrapper = mountHost();
+
+    expect(document.documentElement.style.getPropertyValue('--v-tok-surface')).not.toBe('');
+
+    wrapper.destroy();
+  });
+
   it('рендерит шапку, дашборд и футер без ошибок в консоли', () => {
     const wrapper = mountHost();
     const text = wrapper.text();

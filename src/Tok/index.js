@@ -24,6 +24,7 @@ export function installTok(Vue) {
 // `TokApp` — прежнее имя корневого компонента. Алиас стоит одной строки, а код
 // хоста, написанный до переезда в библиотечную раскладку, продолжает работать.
 export { Tok, Tok as TokApp, tokThemeTokens };
+export { applyTokTheme, tokThemeCssVars, hasHostTokTheme } from './theme/applyTokTheme';
 export { createTokConfig, DEFAULT_CONFIG } from './services/config';
 export {
   REPLY_KIND,
