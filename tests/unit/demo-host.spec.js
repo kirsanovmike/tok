@@ -3,7 +3,6 @@ import Vuetify from 'vuetify';
 import VueRouter from 'vue-router';
 import { mount, createLocalVue } from '@vue/test-utils';
 
-import { installTok } from '@/Tok';
 import App from '@/demo/App.vue';
 import DemoDashboard from '@/demo/views/DemoDashboard.vue';
 import { THEME_STORAGE_KEY, themes } from '@/demo/theme';
@@ -14,7 +13,6 @@ Vue.use(Vuetify);
 function mountHost() {
   const localVue = createLocalVue();
   localVue.use(VueRouter);
-  installTok(localVue);
 
   const router = new VueRouter({
     routes: [{ path: '/', component: DemoDashboard }],

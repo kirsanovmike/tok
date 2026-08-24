@@ -1,7 +1,10 @@
 import Vuetify from 'vuetify';
 import { mount, createLocalVue } from '@vue/test-utils';
 
-import { installTok, Tok } from '@/Tok';
+// Импорт по умолчанию и именованный `Tok` — один и тот же компонент (index.js),
+// поэтому предупреждение правила здесь ложное.
+// eslint-disable-next-line import/no-named-as-default
+import Tok from '@/Tok';
 
 // Хост-обёртка: имитирует место вёрстки, куда Трансфера вставляет <Tok />.
 const HostStub = {
@@ -13,7 +16,6 @@ const HostStub = {
 describe('портал Тока', () => {
   it('рендерит содержимое в body, а не в месте вставки', async () => {
     const localVue = createLocalVue();
-    installTok(localVue);
 
     const anchor = document.createElement('div');
     document.body.appendChild(anchor);
@@ -37,5 +39,15 @@ describe('портал Тока', () => {
     expect(inPlace.contains(rendered)).toBe(false);
 
     wrapper.destroy();
+  });
+
+  it('публичный вход больше не отдаёт плагин установки', () => {
+    // Постановка `docs/Задача на доработку 1.md`, строка 90: компонент просто
+    // импортируется в лейауте, устанавливать хосту нечего.
+    // eslint-disable-next-line global-require
+    const api = require('@/Tok');
+
+    expect(api.installTok).toBeUndefined();
+    expect(api.default).toBe(Tok);
   });
 });

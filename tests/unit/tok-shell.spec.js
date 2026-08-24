@@ -10,7 +10,10 @@ import path from 'path';
 import Vue from 'vue';
 import { createLocalVue, mount } from '@vue/test-utils';
 
-import { installTok, Tok } from '@/Tok';
+// Импорт по умолчанию и именованный `Tok` — один и тот же компонент (index.js),
+// поэтому предупреждение правила здесь ложное.
+// eslint-disable-next-line import/no-named-as-default
+import Tok from '@/Tok';
 import { resetPageScrollLock } from '@/Tok/services/utils/scrollLock';
 import { PANEL_MIN_WIDTH, PANEL_WIDTH_STEP } from '@/Tok/services/utils/panelWidth';
 import { flush, mountPanel } from './support/tok';
@@ -27,7 +30,6 @@ const EMPTY_SOURCE = fs.readFileSync(path.join(TOK_DIR, 'SubComponents/TokEmptyS
 
 function mountApp() {
   const localVue = createLocalVue();
-  installTok(localVue);
   return mount(Tok, { localVue });
 }
 
@@ -202,7 +204,6 @@ describe('оболочка Тока', () => {
       document.body.appendChild(anchor);
 
       const localVue = createLocalVue();
-      installTok(localVue);
       const wrapper = mount(Tok, { localVue, attachTo: anchor });
       await flush();
 

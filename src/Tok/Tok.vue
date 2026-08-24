@@ -20,12 +20,19 @@
  * Единственное, что хост вставляет в свою разметку. Собирает конфигурацию,
  * транспорт, стор беседы и голосовой конвейер и раздаёт их вниз через `provide`;
  * сам хранит только одно — открыта ли панель.
+ * Ставить хосту нечего: `portal-vue` подключён локальной регистрацией, тема
+ * приходит переменными `--v-tok-*` из `@tne-ui/core` (ADR-0009).
  *
  * Автор: Кирсанов Михаил
  * @displayName Tok
  * @event open — панель открыли
  * @event close — панель закрыли
  */
+
+// Именованный экспорт, а не плагин: `MountingPortal` ссылается на `Portal`
+// и `PortalTarget` напрямую, поэтому глобальная регистрация ему не нужна.
+// Хост подключает Ток одним импортом компонента — устанавливать нечего.
+import { MountingPortal } from 'portal-vue';
 
 // services
 import {
@@ -44,7 +51,7 @@ import TokPanel from './SubComponents/TokPanel.vue';
 export default {
   name: 'Tok',
 
-  components: { TokEntryButton, TokPanel },
+  components: { MountingPortal, TokEntryButton, TokPanel },
 
   provide() {
     // Конфигурация раздаётся тем же способом, что и стор: глубоко внутри ленты
