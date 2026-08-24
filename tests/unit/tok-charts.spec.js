@@ -121,7 +121,7 @@ describe('графики', () => {
 
     it('CSS-переменная темы имеет приоритет над запасным значением', () => {
       const host = document.createElement('div');
-      host.style.setProperty('--v-tok-chart-1-base', 'rgb(1, 2, 3)');
+      host.style.setProperty('--v-tok-chart-1', 'rgb(1, 2, 3)');
       document.body.appendChild(host);
 
       expect(resolveChartPalette(host, false).series[0]).toBe('rgb(1, 2, 3)');

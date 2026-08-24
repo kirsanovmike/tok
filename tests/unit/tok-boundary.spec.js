@@ -68,6 +68,58 @@ describe('граница переносимой папки src/Tok', () => {
     expect(offenders).toEqual([]);
   });
 
+  it('цвета читаются как --v-tok-<токен>, без суффикса -base', () => {
+    // Переменные объявляет `@tne-ui/core` (ADR-0009). Суффикс `-base` дописывал
+    // парсер темы Vuetify 2 — этого пути больше нет ни в стилях, ни в графиках.
+    const tokensScss = fs.readFileSync(path.join(TOK_DIR, 'styles', '_tokens.scss'), 'utf8');
+
+    expect(tokensScss).toContain('@return var(--v-tok-#{$token});');
+
+    const offenders = sources.filter((file) =>
+      /--v-[\w-]+-base/.test(fs.readFileSync(file, 'utf8')),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it('функции host-color в папке нет — базовые цвета хоста и так объявлены', () => {
+    const offenders = sources.filter((file) => /host-color/.test(fs.readFileSync(file, 'utf8')));
+    expect(offenders).toEqual([]);
+  });
+
+  it('контракт стилей совпадает с набором из @tne-ui/core', () => {
+    const tokensScss = fs.readFileSync(path.join(TOK_DIR, 'styles', '_tokens.scss'), 'utf8');
+
+    // Постановка `docs/Задача на доработку 1.md`, строки 20–80: ровно этот набор
+    // заказчик положил в core. Расхождение сломает сборку в библиотеке.
+    [
+      '@function tok-color($token)',
+      '@mixin tok-button-color($token)',
+      '@mixin tok-gradient($angle: 135deg)',
+      '@mixin tok-thin-scrollbar($size: $tok-scrollbar-size)',
+      '$tok-scrollbar-size: 6px;',
+      '$tok-panel-min-width: 520px;',
+      '$tok-radius-lg: 20px;',
+      '$tok-radius-md: 16px;',
+      '$tok-radius-sm: 12px;',
+      '$tok-space-xs: 4px;',
+      '$tok-space-sm: 8px;',
+      '$tok-space-md: 16px;',
+      '$tok-space-lg: 24px;',
+      '$tok-space-xl: 32px;',
+      '$tok-z-overlay: 200;',
+      '$tok-z-panel: 201;',
+      '$tok-z-entry: 199;',
+      '$tok-duration-panel: 280ms;',
+      '$tok-easing-panel: cubic-bezier(0.22, 1, 0.36, 1);',
+    ].forEach((line) => expect(tokensScss).toContain(line));
+
+    // Скругление шторки в core не входит: оно объявлено в том SFC, который им пользуется.
+    expect(tokensScss).not.toContain('$tok-panel-radius');
+    expect(fs.readFileSync(path.join(TOK_DIR, 'SubComponents', 'TokPanel.vue'), 'utf8')).toContain(
+      '$tok-panel-radius: 24px;',
+    );
+  });
+
   it('раскладка библиотечная: Tok.vue, SubComponents/, services/', () => {
     expect(fs.existsSync(path.join(TOK_DIR, 'Tok.vue'))).toBe(true);
 

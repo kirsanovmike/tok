@@ -1,15 +1,18 @@
 /**
  * Цвета графиков в терминах, понятных amCharts.
  *
- * Проблема: компоненты Тока красятся CSS-переменными Vuetify, а amCharts рисует
- * SVG из JavaScript и строку `var(--v-tok-chart-1-base)` не понимает — ему нужно
+ * Проблема: компоненты Тока красятся CSS-переменными хоста, а amCharts рисует
+ * SVG из JavaScript и строку `var(--v-tok-chart-1)` не понимает — ему нужно
  * настоящее значение цвета. Поэтому значение достаётся из вычисленных стилей
  * документа: так график берёт ровно ту тему, что сейчас включена, и переключается
  * вместе с ней.
  *
  * Запасной источник — сами токены (`theme/tokens.js`). Он срабатывает там, где
- * Vuetify не установил свой `:root` (jsdom в тестах, изолированный рендер), и
+ * переменных в `:root` нет (jsdom в тестах, изолированный рендер), и
  * держит правило «hex только в tokens.js»: здесь ни одного литерала цвета нет.
+ *
+ * Имена переменных — без суффикса `-base`: их объявляет `@tne-ui/core`, а не
+ * парсер темы Vuetify (ADR-0009).
  */
 import tokens from '../../theme/tokens';
 
@@ -32,7 +35,7 @@ function readCssToken(root, name) {
   }
 
   try {
-    return window.getComputedStyle(root).getPropertyValue(`--v-${name}-base`).trim();
+    return window.getComputedStyle(root).getPropertyValue(`--v-${name}`).trim();
   } catch (e) {
     return '';
   }

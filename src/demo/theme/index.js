@@ -1,11 +1,11 @@
 /**
- * Сборка темы демо-приложения: палитры хоста + поверхности демо-дашборда + токены Тока.
+ * Сборка темы демо-приложения: палитры хоста + поверхности демо-дашборда.
  *
- * Ровно этот же приём применяется при переносе в Трансферу: к её палитрам добавляются
- * `tokThemeTokens`, остальное остаётся как есть (см. `src/Tok/README.md`).
+ * Цветов Тока здесь больше нет: его переменные `--v-tok-*` объявляются не через
+ * палитру Vuetify (та дописала бы им суффикс `-base`), а напрямую — в Трансфере
+ * их даёт `@tne-ui/core`, на стенде их пишет `applyTokTheme` из `src/demo/App.vue`.
+ * См. ADR-0009.
  */
-import { tokThemeTokens } from '@/Tok';
-
 import palettes from './palettes';
 import hostTokens from './hostTokens';
 
@@ -15,7 +15,6 @@ function composeTheme(mode) {
   return {
     ...palettes[mode],
     ...hostTokens[mode],
-    ...tokThemeTokens[mode],
   };
 }
 

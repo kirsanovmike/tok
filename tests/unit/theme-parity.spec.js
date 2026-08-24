@@ -2,6 +2,7 @@ import palettes from '@/demo/theme/palettes';
 import hostTokens from '@/demo/theme/hostTokens';
 import tokTokens from '@/Tok/theme/tokens';
 import { themes } from '@/demo/theme';
+import { tokThemeCssVars } from '@/Tok/theme/applyTokTheme';
 
 /** Плоский список ключей: `indigo.lighten5`, `tok-surface`, ... */
 function flatKeys(palette) {
@@ -65,10 +66,23 @@ describe('паритет палитр', () => {
     expect(broken).toEqual([]);
   });
 
-  it('токены Тока попадают в обе темы плоскими цветами верхнего уровня', () => {
+  it('токенов Тока в палитре Vuetify больше нет: их объявляет @tne-ui/core', () => {
+    // ADR-0009. Раньше цвета вливались в тему, и Vuetify дописывал им суффикс
+    // `-base`. Теперь переменные `--v-tok-*` объявляет хост, а стенду их пишет
+    // `applyTokTheme` — палитра Vuetify о Токе знать не должна.
     Object.keys(tokTokens.light).forEach((token) => {
-      expect(typeof themes.light[token]).toBe('string');
-      expect(typeof themes.dark[token]).toBe('string');
+      expect(themes.light[token]).toBeUndefined();
+      expect(themes.dark[token]).toBeUndefined();
+    });
+  });
+
+  it('каждый токен Тока превращается в переменную --v-tok-* в обеих темах', () => {
+    ['light', 'dark'].forEach((mode) => {
+      const vars = tokThemeCssVars(mode);
+
+      Object.keys(tokTokens[mode]).forEach((token) => {
+        expect(vars[`--v-${token}`]).toBe(tokTokens[mode][token]);
+      });
     });
   });
 });
