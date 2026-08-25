@@ -1,8 +1,8 @@
 import palettes from '@/demo/theme/palettes';
 import hostTokens from '@/demo/theme/hostTokens';
-import tokTokens from '@/Tok/theme/tokens';
+import tokTokens from '@/demo/theme/tokTokens';
+import chartTokens from '@/Tok/theme/tokens';
 import { themes } from '@/demo/theme';
-import { tokThemeCssVars } from '@/Tok/theme/applyTokTheme';
 
 /** Плоский список ключей: `indigo.lighten5`, `tok-surface`, ... */
 function flatKeys(palette) {
@@ -29,7 +29,8 @@ describe('паритет палитр', () => {
   it.each([
     ['палитры хоста', palettes],
     ['поверхности демо-хоста', hostTokens],
-    ['токены Тока', tokTokens],
+    ['цвета Тока', tokTokens],
+    ['цвета графиков Тока', chartTokens],
     ['итоговая тема', themes],
   ])('%s: наборы ключей light и dark совпадают', (_name, source) => {
     const light = flatKeys(source.light);
@@ -66,22 +67,25 @@ describe('паритет палитр', () => {
     expect(broken).toEqual([]);
   });
 
-  it('токенов Тока в палитре Vuetify больше нет: их объявляет @tne-ui/core', () => {
-    // ADR-0009. Раньше цвета вливались в тему, и Vuetify дописывал им суффикс
-    // `-base`. Теперь переменные `--v-tok-*` объявляет хост, а стенду их пишет
-    // `applyTokTheme` — палитра Vuetify о Токе знать не должна.
-    Object.keys(tokTokens.light).forEach((token) => {
-      expect(themes.light[token]).toBeUndefined();
-      expect(themes.dark[token]).toBeUndefined();
+  it('цвета Тока лежат в палитре Vuetify: тему переключает она', () => {
+    // ADR-0010. Своего механизма темы у Тока нет: цвета объявляет хост, а стенд
+    // делает это через палитру Vuetify — она же их и переписывает при
+    // переключении. Плоскими ключами верхнего уровня, иначе парсер темы выкинет
+    // всё, что не `base`/`lighten*`/`darken*` (см. комментарий в `palettes.js`).
+    ['light', 'dark'].forEach((mode) => {
+      Object.keys(tokTokens[mode]).forEach((token) => {
+        expect(themes[mode][token]).toBe(tokTokens[mode][token]);
+      });
     });
   });
 
-  it('каждый токен Тока превращается в переменную --v-tok-* в обеих темах', () => {
+  it('запасные цвета графиков совпадают с объявлениями хоста', () => {
+    // amCharts читает переменные из документа, а `src/Tok/theme/tokens.js` —
+    // запасной источник для окружений без них. Разошедшись, копии дали бы
+    // график не в тон панели, и заметить это можно было бы только глазами.
     ['light', 'dark'].forEach((mode) => {
-      const vars = tokThemeCssVars(mode);
-
-      Object.keys(tokTokens[mode]).forEach((token) => {
-        expect(vars[`--v-${token}`]).toBe(tokTokens[mode][token]);
+      Object.keys(chartTokens[mode]).forEach((token) => {
+        expect(tokTokens[mode][token]).toBe(chartTokens[mode][token]);
       });
     });
   });

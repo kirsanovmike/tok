@@ -378,20 +378,15 @@ export default {
 </script>
 
 <style lang="scss">
-// Скругление шторки: левые углы скруглены, правый край строго прямой.
-// В контракте `@tne-ui/core` этой переменной нет и быть не должно — скругление
-// шторки нужно ровно одному правилу ровно одного компонента.
-$tok-panel-radius: 24px;
-
 .tok-overlay {
   position: fixed;
   inset: 0;
-  z-index: $tok-z-overlay;
+  z-index: 200;
   // Прозрачность задаётся `opacity`, а не rgba: alpha-канал в токены темы
   // не положить — парсер Vuetify 2 понимает только 6-значный hex.
   // 0.16 вместо 0.28: затемнение обязано отделить панель от страницы, но не
   // гасить дашборд, ради которого вопрос и задают.
-  background-color: tok-color(overlay);
+  background-color: var(--v-tok-overlay);
   opacity: 0.16;
 }
 
@@ -400,17 +395,17 @@ $tok-panel-radius: 24px;
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: $tok-z-panel;
+  z-index: 201;
   display: flex;
   flex-direction: column;
   // Стартовая ширина — она же минимальная (пункт 7 постановки «Доработки 3»).
   // Шире её панель растягивают ручкой, и тогда ширину задаёт инлайновый стиль.
-  width: $tok-panel-min-width;
+  width: 520px;
   max-width: 100vw;
-  background-color: tok-color(surface);
+  background-color: var(--v-tok-surface);
   // «Шторка»: скруглены только левые углы, правый край строго прямой.
-  border-radius: $tok-panel-radius 0 0 $tok-panel-radius;
-  box-shadow: -4px 0 28px tok-color(shadow);
+  border-radius: 24px 0 0 24px;
+  box-shadow: -4px 0 28px var(--v-tok-shadow);
 
   // Раскрыта во весь экран — скруглять нечего: слева тоже край экрана.
   &--full {
@@ -422,13 +417,13 @@ $tok-panel-radius: 24px;
     flex: none;
     align-items: center;
     justify-content: space-between;
-    padding: $tok-space-lg $tok-space-lg $tok-space-md;
+    padding: 24px 24px 16px;
   }
 
   &__header-actions {
     display: flex;
     align-items: center;
-    gap: $tok-space-xs;
+    gap: 4px;
   }
 
   &__icon-button {
@@ -443,15 +438,19 @@ $tok-panel-radius: 24px;
     border-radius: 50%;
     cursor: pointer;
 
-    @include tok-button-color(text-muted);
+    // `.tok-root` поднимает специфичность над сбросом `button { color: inherit }`
+    // у Vuetify и normalize: без него кнопка красится в цвет родителя.
+    .tok-root & {
+      color: var(--v-tok-text-muted);
+    }
 
     &:hover {
-      color: tok-color(text);
-      background-color: tok-color(surface-muted);
+      color: var(--v-tok-text);
+      background-color: var(--v-tok-surface-muted);
     }
 
     &:focus-visible {
-      outline: 2px solid tok-color(accent);
+      outline: 2px solid var(--v-tok-accent);
       outline-offset: 2px;
     }
   }
@@ -469,7 +468,7 @@ $tok-panel-radius: 24px;
 
   &__footer {
     flex: none;
-    padding: $tok-space-md $tok-space-lg $tok-space-lg;
+    padding: 16px 24px 24px;
   }
 }
 
@@ -493,7 +492,7 @@ $tok-panel-radius: 24px;
 
 .tok-panel-enter-active,
 .tok-panel-leave-active {
-  transition: transform $tok-duration-panel $tok-easing-panel;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .tok-panel-enter,
@@ -503,7 +502,7 @@ $tok-panel-radius: 24px;
 
 .tok-overlay-enter-active,
 .tok-overlay-leave-active {
-  transition: opacity $tok-duration-panel linear;
+  transition: opacity 280ms linear;
 }
 
 .tok-overlay-enter,

@@ -167,19 +167,19 @@ export default {
 .tok-chart {
   // Отступ меньше прежнего: в панели 520px каждые 8px по краям — это 8px,
   // которых не хватает подписям оси.
-  padding: $tok-space-sm $tok-space-sm $tok-space-md;
+  padding: 8px 8px 16px;
   overflow: hidden;
-  background-color: tok-color(surface);
-  border: 1px solid tok-color(border);
-  border-radius: $tok-radius-md;
+  background-color: var(--v-tok-surface);
+  border: 1px solid var(--v-tok-border);
+  border-radius: 16px;
 
   &__toolbar {
     display: inline-flex;
     gap: 2px;
-    margin-bottom: $tok-space-sm;
+    margin-bottom: 8px;
     padding: 2px;
-    background-color: tok-color(surface-muted);
-    border-radius: $tok-radius-sm;
+    background-color: var(--v-tok-surface-muted);
+    border-radius: 12px;
   }
 
   &__switch {
@@ -188,22 +188,28 @@ export default {
     font-size: 12px;
     background: none;
     border: 0;
-    border-radius: $tok-radius-sm - 4px;
+    border-radius: 8px;
     cursor: pointer;
 
     // График приезжает отдельным чанком, его CSS подключается позже сброса хоста
-    // и потому уцелел бы и без миксина — но полагаться на порядок загрузки чанков
-    // нельзя: он меняется от сборки к сборке.
-    @include tok-button-color(text-muted);
+    // и потому уцелел бы и без вложенного `.tok-root` — но полагаться на порядок
+    // загрузки чанков нельзя: он меняется от сборки к сборке.
+    .tok-root & {
+      color: var(--v-tok-text-muted);
+    }
 
     &--active {
-      background-color: tok-color(accent);
+      background-color: var(--v-tok-accent);
 
-      @include tok-button-color(text-inverse);
+      // `.tok-root` поднимает специфичность над сбросом `button { color: inherit }`
+      // у Vuetify и normalize: без него кнопка красится в цвет родителя.
+      .tok-root & {
+        color: var(--v-tok-text-inverse);
+      }
     }
 
     &:focus-visible {
-      outline: 2px solid tok-color(accent);
+      outline: 2px solid var(--v-tok-accent);
       outline-offset: 2px;
     }
   }
@@ -211,8 +217,8 @@ export default {
   &__caption {
     // 8px, а не 4: верхняя подпись оси значений рисуется у самого края холста и
     // при 4px наезжала на текст подписи (пункт 6 постановки «Доработки 3»).
-    margin: 0 0 $tok-space-sm;
-    color: tok-color(text-muted);
+    margin: 0 0 8px;
+    color: var(--v-tok-text-muted);
     font-size: 12px;
     line-height: 1.3;
   }
@@ -226,7 +232,7 @@ export default {
 
   &__empty {
     margin: 0;
-    color: tok-color(text-muted);
+    color: var(--v-tok-text-muted);
     font-size: 14px;
   }
 }

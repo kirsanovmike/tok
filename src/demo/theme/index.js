@@ -1,13 +1,14 @@
 /**
- * Сборка темы демо-приложения: палитры хоста + поверхности демо-дашборда.
+ * Сборка темы демо-приложения: палитры хоста + поверхности демо-дашборда + цвета Тока.
  *
- * Цветов Тока здесь больше нет: его переменные `--v-tok-*` объявляются не через
- * палитру Vuetify (та дописала бы им суффикс `-base`), а напрямую — в Трансфере
- * их даёт `@tne-ui/core`, на стенде их пишет `applyTokTheme` из `src/demo/App.vue`.
- * См. ADR-0009.
+ * Цвета Тока лежат здесь потому, что объявлять их — забота хоста, а переключать —
+ * забота Vuetify: парсер темы печатает их в `:root` как `--v-tok-*-base`, а
+ * `src/demo/styles/tok-vars.scss` переименовывает в те имена, которые читает Ток.
+ * В Трансфере ту же работу делает `@tne-ui/core`. См. ADR-0010.
  */
 import palettes from './palettes';
 import hostTokens from './hostTokens';
+import tokTokens from './tokTokens';
 
 export const THEME_STORAGE_KEY = 'tok-demo:theme:v1';
 
@@ -15,6 +16,7 @@ function composeTheme(mode) {
   return {
     ...palettes[mode],
     ...hostTokens[mode],
+    ...tokTokens[mode],
   };
 }
 

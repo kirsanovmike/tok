@@ -88,25 +88,43 @@ export default {
   height: 100%;
   // Справа меньше, чем слева: недостающие пиксели добирает сама полоса
   // прокрутки — 16px отступа плюс 6px полосы дают те же оптические 24px.
-  padding: 0 $tok-space-md 0 $tok-space-lg;
+  padding: 0 16px 0 24px;
   overflow-y: auto;
   // Докрутив ленту до конца, человек не должен «протолкнуть» прокрутку в
   // страницу хоста.
   overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--v-tok-border-strong) transparent;
 
-  @include tok-thin-scrollbar;
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--v-tok-border-strong);
+    border-radius: 6px;
+  }
+
+  &:hover::-webkit-scrollbar-thumb {
+    background-color: var(--v-tok-text-muted);
+  }
 
   &__list {
     display: flex;
     flex-direction: column;
-    gap: $tok-space-lg;
+    gap: 24px;
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
   &__loader {
-    margin-top: $tok-space-lg;
+    margin-top: 24px;
   }
 }
 </style>

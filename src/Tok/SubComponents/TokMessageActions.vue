@@ -101,40 +101,44 @@ export default {
 .tok-actions {
   display: flex;
   align-items: center;
-  gap: $tok-space-sm;
-  margin-top: $tok-space-sm;
+  gap: 8px;
+  margin-top: 8px;
 
   &__button {
     display: flex;
     align-items: center;
-    gap: $tok-space-xs;
+    gap: 4px;
     padding: 6px;
     font-size: 13px;
     background: none;
     border: 0;
-    border-radius: $tok-radius-sm;
+    border-radius: 12px;
     cursor: pointer;
 
-    @include tok-button-color(text-muted);
+    // `.tok-root` поднимает специфичность над сбросом `button { color: inherit }`
+    // у Vuetify и normalize: без него кнопка красится в цвет родителя.
+    .tok-root & {
+      color: var(--v-tok-text-muted);
+    }
 
     &:hover {
-      color: tok-color(accent);
-      background-color: tok-color(surface-muted);
+      color: var(--v-tok-accent);
+      background-color: var(--v-tok-surface-muted);
     }
 
     &:focus-visible {
-      outline: 2px solid tok-color(accent);
+      outline: 2px solid var(--v-tok-accent);
       outline-offset: 2px;
     }
 
     &--source {
-      padding: 6px $tok-space-sm;
-      background-color: tok-color(surface-muted);
+      padding: 6px 8px;
+      background-color: var(--v-tok-surface-muted);
     }
   }
 
   &__hint {
-    color: tok-color(text-muted);
+    color: var(--v-tok-text-muted);
     font-size: 13px;
   }
 }

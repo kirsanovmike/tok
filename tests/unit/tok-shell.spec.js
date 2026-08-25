@@ -25,7 +25,6 @@ const PANEL_SOURCE = fs.readFileSync(
 
 const TOK_DIR = path.resolve(__dirname, '../../src/Tok');
 const FEED_SOURCE = fs.readFileSync(path.join(TOK_DIR, 'SubComponents/TokMessageList.vue'), 'utf8');
-const TOKENS_SCSS = fs.readFileSync(path.join(TOK_DIR, 'styles/_tokens.scss'), 'utf8');
 const EMPTY_SOURCE = fs.readFileSync(path.join(TOK_DIR, 'SubComponents/TokEmptyState.vue'), 'utf8');
 
 function mountApp() {
@@ -67,18 +66,20 @@ describe('оболочка Тока', () => {
       );
 
       expect(source).toContain('position: fixed');
-      expect(source).toContain('@include tok-gradient');
+      expect(source).toContain(
+        'linear-gradient(160deg, var(--v-tok-gradient-from), var(--v-tok-gradient-to))',
+      );
       expect(source).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     });
   });
 
   describe('панель', () => {
     it('правый край строго прямой: правые радиусы равны нулю', () => {
-      const rule = PANEL_SOURCE.match(/border-radius: \$tok-panel-radius[^;]*;/);
+      const rule = PANEL_SOURCE.match(/border-radius: 24px[^;]*;/);
 
       expect(rule).not.toBeNull();
       // `<левый-верхний> <правый-верхний> <правый-нижний> <левый-нижний>`
-      expect(rule[0]).toBe('border-radius: $tok-panel-radius 0 0 $tok-panel-radius;');
+      expect(rule[0]).toBe('border-radius: 24px 0 0 24px;');
       // И прижата к правому краю viewport.
       expect(PANEL_SOURCE).toContain('right: 0;');
     });
@@ -240,21 +241,19 @@ describe('оболочка Тока', () => {
       const feed = FEED_SOURCE.slice(FEED_SOURCE.indexOf('.tok-feed {'));
 
       expect(feed.slice(0, 400)).toContain('box-sizing: border-box;');
-      expect(feed.slice(0, 400)).toContain('padding: 0 $tok-space-md 0 $tok-space-lg;');
-      expect(EMPTY_SOURCE).toContain('padding: 0 $tok-space-lg;');
+      expect(feed.slice(0, 400)).toContain('padding: 0 16px 0 24px;');
+      expect(EMPTY_SOURCE).toContain('padding: 0 24px;');
     });
 
-    it('лента красит полосу тонким миксином, а не дефолтом браузера', () => {
-      expect(FEED_SOURCE).toContain('@include tok-thin-scrollbar;');
-    });
-
-    it('миксин тонкой полосы есть, он вдвое тоньше дефолта и приглушённого цвета', () => {
-      expect(TOKENS_SCSS).toContain('$tok-scrollbar-size: 6px;');
-      expect(TOKENS_SCSS).toContain('@mixin tok-thin-scrollbar');
-      // Firefox настраивается парой свойств, WebKit — псевдоэлементами: нужны оба.
-      expect(TOKENS_SCSS).toContain('scrollbar-width: thin;');
-      expect(TOKENS_SCSS).toContain('&::-webkit-scrollbar-thumb {');
-      expect(TOKENS_SCSS).toContain('tok-color(border-strong)');
+    it('лента красит полосу сама: вдвое тоньше дефолта и приглушённого цвета', () => {
+      // Дефолт WebKit — 12–15px тёмно-серого: в панели 520px это заметная линия,
+      // спорящая с содержимым. Firefox настраивается парой свойств,
+      // WebKit — псевдоэлементами: нужны оба набора.
+      expect(FEED_SOURCE).toContain('scrollbar-width: thin;');
+      expect(FEED_SOURCE).toContain('scrollbar-color: var(--v-tok-border-strong) transparent;');
+      expect(FEED_SOURCE).toContain('&::-webkit-scrollbar-thumb {');
+      expect(FEED_SOURCE).toContain('background-color: var(--v-tok-border-strong);');
+      expect(FEED_SOURCE).toMatch(/&::-webkit-scrollbar \{\n\s+width: 6px;/);
     });
   });
 
@@ -269,9 +268,8 @@ describe('оболочка Тока', () => {
       Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
     });
 
-    it('минимальная ширина одна и та же в SCSS и в JS', () => {
-      expect(TOKENS_SCSS).toContain(`$tok-panel-min-width: ${PANEL_MIN_WIDTH}px;`);
-      expect(PANEL_SOURCE).toContain('width: $tok-panel-min-width;');
+    it('минимальная ширина одна и та же в стилях и в JS', () => {
+      expect(PANEL_SOURCE).toContain(`width: ${PANEL_MIN_WIDTH}px;`);
       // Планшетный медиазапрос снят: 60vw с минимумом 420px противоречит новому
       // минимуму 520px.
       expect(PANEL_SOURCE).not.toContain('max-width: 959px');

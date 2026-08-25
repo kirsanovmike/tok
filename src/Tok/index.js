@@ -5,20 +5,22 @@
  * и `<Tok />` в разметке лейаута. Плагина установки нет — `portal-vue`
  * зарегистрирован локально в `Tok.vue` (ADR-0009).
  *
- * Цвета приходят переменными `--v-tok-*` из `@tne-ui/core`. Там, где библиотеки
- * нет (демо-стенд, изолированный просмотр), их раскладывает `applyTokTheme`
- * из тех же значений `theme/tokens.js`.
+ * Цвета приходят переменными `--v-tok-*`, которые объявляет хост: в Трансфере —
+ * `@tne-ui/core`, на стенде — сам стенд из палитры Vuetify. Ток их только читает
+ * и своего механизма темы не имеет: тему переключает Vuetify (ADR-0010).
  *
  * Всё, что различается между стендом и Трансферой, передаётся пропом `config`
  * (см. `services/config.js`). Собственный стор Ток создаёт сам — стор хоста не трогает.
  */
 import Tok from './Tok.vue';
-import tokThemeTokens from './theme/tokens';
+import tokChartTokens from './theme/tokens';
 
 // `TokApp` — прежнее имя корневого компонента. Алиас стоит одной строки, а код
 // хоста, написанный до переезда в библиотечную раскладку, продолжает работать.
-export { Tok, Tok as TokApp, tokThemeTokens };
-export { applyTokTheme, tokThemeCssVars, hasHostTokTheme } from './theme/applyTokTheme';
+//
+// `tokChartTokens` — запасные цвета для amCharts (`theme/tokens.js`). Хосту они
+// нужны, только если он рисует свои графики в той же палитре.
+export { Tok, Tok as TokApp, tokChartTokens };
 export { createTokConfig, DEFAULT_CONFIG } from './services/config';
 export {
   REPLY_KIND,

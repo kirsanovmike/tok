@@ -50,10 +50,16 @@ describe('граница переносимой папки src/Tok', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('linear-gradient встречается только в styles/_tokens.scss', () => {
+  it('градиент собран из токенов, а не из литералов', () => {
+    // Сам `linear-gradient(` теперь пишется в тех компонентах, которым он нужен
+    // (точка входа, лоадер, аватар-звёздочка): общего миксина больше нет.
+    // Единственное требование — цвета в нём токенные.
     const offenders = sources
-      .filter((file) => !file.endsWith(path.join('styles', '_tokens.scss')))
-      .filter((file) => fs.readFileSync(file, 'utf8').includes('linear-gradient('));
+      .filter((file) => fs.readFileSync(file, 'utf8').includes('linear-gradient('))
+      .filter((file) => {
+        const gradients = fs.readFileSync(file, 'utf8').match(/linear-gradient\([^;]*\)/g) || [];
+        return gradients.some((gradient) => !gradient.includes('var(--v-tok-'));
+      });
 
     expect(offenders).toEqual([]);
   });
@@ -69,12 +75,9 @@ describe('граница переносимой папки src/Tok', () => {
   });
 
   it('цвета читаются как --v-tok-<токен>, без суффикса -base', () => {
-    // Переменные объявляет `@tne-ui/core` (ADR-0009). Суффикс `-base` дописывал
-    // парсер темы Vuetify 2 — этого пути больше нет ни в стилях, ни в графиках.
-    const tokensScss = fs.readFileSync(path.join(TOK_DIR, 'styles', '_tokens.scss'), 'utf8');
-
-    expect(tokensScss).toContain('@return var(--v-tok-#{$token});');
-
+    // Переменные объявляет хост под этими именами: `@tne-ui/core` в Трансфере,
+    // `src/demo/styles/tok-vars.scss` на стенде. Суффикс `-base` — внутреннее дело
+    // хоста: там его дописывает парсер темы Vuetify, сюда он не доезжает (ADR-0010).
     const offenders = sources.filter((file) =>
       /--v-[\w-]+-base/.test(fs.readFileSync(file, 'utf8')),
     );
@@ -86,38 +89,48 @@ describe('граница переносимой папки src/Tok', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('контракт стилей совпадает с набором из @tne-ui/core', () => {
-    const tokensScss = fs.readFileSync(path.join(TOK_DIR, 'styles', '_tokens.scss'), 'utf8');
-
-    // Постановка `docs/Задача на доработку 1.md`, строки 20–80: ровно этот набор
-    // заказчик положил в core. Расхождение сломает сборку в библиотеке.
-    [
-      '@function tok-color($token)',
-      '@mixin tok-button-color($token)',
-      '@mixin tok-gradient($angle: 135deg)',
-      '@mixin tok-thin-scrollbar($size: $tok-scrollbar-size)',
-      '$tok-scrollbar-size: 6px;',
-      '$tok-panel-min-width: 520px;',
-      '$tok-radius-lg: 20px;',
-      '$tok-radius-md: 16px;',
-      '$tok-radius-sm: 12px;',
-      '$tok-space-xs: 4px;',
-      '$tok-space-sm: 8px;',
-      '$tok-space-md: 16px;',
-      '$tok-space-lg: 24px;',
-      '$tok-space-xl: 32px;',
-      '$tok-z-overlay: 200;',
-      '$tok-z-panel: 201;',
-      '$tok-z-entry: 199;',
-      '$tok-duration-panel: 280ms;',
-      '$tok-easing-panel: cubic-bezier(0.22, 1, 0.36, 1);',
-    ].forEach((line) => expect(tokensScss).toContain(line));
-
-    // Скругление шторки в core не входит: оно объявлено в том SFC, который им пользуется.
-    expect(tokensScss).not.toContain('$tok-panel-radius');
-    expect(fs.readFileSync(path.join(TOK_DIR, 'SubComponents', 'TokPanel.vue'), 'utf8')).toContain(
-      '$tok-panel-radius: 24px;',
+  it('стили ни от чего не зависят: ни функций, ни миксинов, ни $-переменных', () => {
+    // Папка копируется в Трансферу и в общую библиотеку как есть, и sass-loader
+    // там не настраивают. Поэтому в SFC не должно остаться ничего, что нужно
+    // подмешивать снаружи: цвет — `var(--v-tok-*)`, всё остальное — числами
+    // прямо в правиле (ADR-0010).
+    const offenders = sources.filter((file) =>
+      /tok-color\(|@include\s|@mixin\s|@import\s|\$tok-/.test(fs.readFileSync(file, 'utf8')),
     );
+
+    expect(offenders).toEqual([]);
+  });
+
+  it('общего файла стилей в папке нет', () => {
+    expect(fs.existsSync(path.join(TOK_DIR, 'styles'))).toBe(false);
+    expect(sources.filter((file) => file.endsWith('.scss'))).toEqual([]);
+  });
+
+  it('своего механизма темы у папки нет — её переключает Vuetify хоста', () => {
+    expect(fs.existsSync(path.join(TOK_DIR, 'theme', 'applyTokTheme.js'))).toBe(false);
+
+    const offenders = sources.filter((file) =>
+      /applyTokTheme|setProperty\(\s*['"`]--v-/.test(fs.readFileSync(file, 'utf8')),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it('в theme/ остались только цвета графиков', () => {
+    // Всё остальное красится переменными хоста прямо в стилях; в JS цвет нужен
+    // ровно одному потребителю — amCharts, который `var(…)` не понимает.
+    // eslint-disable-next-line global-require
+    const tokens = require('../../src/Tok/theme/tokens').default;
+
+    const allowed = /^tok-(text|text-muted|chart-\d|chart-grid|chart-fill|tooltip-\w+)$/;
+    expect(Object.keys(tokens.light).filter((key) => !allowed.test(key))).toEqual([]);
+
+    const consumers = sources
+      .filter((file) => !file.endsWith(path.join('theme', 'tokens.js')))
+      .filter((file) => /from '[./]+theme\/tokens'/.test(fs.readFileSync(file, 'utf8')));
+    expect(consumers).toEqual([
+      path.join(TOK_DIR, 'index.js'),
+      path.join(TOK_DIR, 'services', 'charts', 'palette.js'),
+    ]);
   });
 
   it('раскладка библиотечная: Tok.vue, SubComponents/, services/', () => {

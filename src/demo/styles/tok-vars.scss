@@ -1,0 +1,55 @@
+// Переменные Тока для демо-стенда.
+//
+// Компоненты Тока читают цвета как `var(--v-tok-<токен>)` и больше ничего о теме
+// не знают: ни функции, ни миксина, ни JS-переключателя внутри папки нет (ADR-0010).
+// Объявить эти переменные — забота хоста. В Трансфере это делает `@tne-ui/core`,
+// здесь — стенд.
+//
+// Значения приходят из палитры Vuetify (`src/demo/theme/tokTokens.js`): парсер темы
+// печатает их в `:root` с суффиксом `-base` и переписывает при каждом переключении
+// `$vuetify.theme.dark`. Остаётся только назвать их так, как ждёт Ток, — тогда тему
+// переключает Vuetify, а не мы.
+//
+// Список повторяет ключи `tokTokens.js` целиком; за полнотой следит
+// `tests/unit/theme-vars.spec.js`.
+
+:root {
+  // Поверхности
+  --v-tok-surface: var(--v-tok-surface-base);
+  --v-tok-surface-muted: var(--v-tok-surface-muted-base);
+  --v-tok-surface-elevated: var(--v-tok-surface-elevated-base);
+  --v-tok-overlay: var(--v-tok-overlay-base);
+  --v-tok-shadow: var(--v-tok-shadow-base);
+
+  // Текст
+  --v-tok-text: var(--v-tok-text-base);
+  --v-tok-text-muted: var(--v-tok-text-muted-base);
+  --v-tok-text-inverse: var(--v-tok-text-inverse-base);
+
+  // Линии
+  --v-tok-border: var(--v-tok-border-base);
+  --v-tok-border-strong: var(--v-tok-border-strong-base);
+
+  // Акцент
+  --v-tok-accent: var(--v-tok-accent-base);
+  --v-tok-accent-soft: var(--v-tok-accent-soft-base);
+
+  // Градиент
+  --v-tok-gradient-from: var(--v-tok-gradient-from-base);
+  --v-tok-gradient-to: var(--v-tok-gradient-to-base);
+
+  // Статусы ответа
+  --v-tok-danger: var(--v-tok-danger-base);
+  --v-tok-success: var(--v-tok-success-base);
+  --v-tok-warning: var(--v-tok-warning-base);
+
+  // Графики
+  --v-tok-chart-grid: var(--v-tok-chart-grid-base);
+  --v-tok-chart-fill: var(--v-tok-chart-fill-base);
+  --v-tok-chart-1: var(--v-tok-chart-1-base);
+  --v-tok-chart-2: var(--v-tok-chart-2-base);
+  --v-tok-chart-3: var(--v-tok-chart-3-base);
+  --v-tok-chart-4: var(--v-tok-chart-4-base);
+  --v-tok-tooltip-surface: var(--v-tok-tooltip-surface-base);
+  --v-tok-tooltip-text: var(--v-tok-tooltip-text-base);
+}

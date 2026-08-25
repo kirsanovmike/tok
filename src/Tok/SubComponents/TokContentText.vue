@@ -46,14 +46,14 @@ export default {
 .tok-content-text {
   &__paragraph {
     margin: 0;
-    color: tok-color(text);
+    color: var(--v-tok-text);
     font-size: 15px;
     line-height: 1.5;
     white-space: pre-line;
     overflow-wrap: anywhere;
 
     & + & {
-      margin-top: $tok-space-sm;
+      margin-top: 8px;
     }
   }
 }

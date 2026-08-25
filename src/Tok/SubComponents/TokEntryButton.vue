@@ -64,9 +64,9 @@ export default {
 <style lang="scss">
 .tok-entry {
   position: fixed;
-  right: $tok-space-lg;
-  bottom: $tok-space-lg;
-  z-index: $tok-z-entry;
+  right: 24px;
+  bottom: 24px;
+  z-index: 199;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,21 +74,25 @@ export default {
   height: 54px;
   padding: 0;
   border: 0;
-  border-radius: $tok-radius-md;
+  border-radius: 16px;
   // Совсем небольшая тень: кнопка лежит на странице, а не висит над ней.
-  box-shadow: 0 2px 6px tok-color(shadow);
+  box-shadow: 0 2px 6px var(--v-tok-shadow);
   cursor: pointer;
-  transition: transform $tok-duration-panel $tok-easing-panel, opacity 160ms linear;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), opacity 160ms linear;
+  background-image: linear-gradient(160deg, var(--v-tok-gradient-from), var(--v-tok-gradient-to));
 
-  @include tok-gradient(160deg);
-  @include tok-button-color(text-inverse);
+  // `.tok-root` поднимает специфичность над сбросом `button { color: inherit }`
+  // у Vuetify и normalize: без него кнопка красится в цвет родителя.
+  .tok-root & {
+    color: var(--v-tok-text-inverse);
+  }
 
   &:hover {
     transform: translateY(-2px);
   }
 
   &:focus-visible {
-    outline: 2px solid tok-color(accent);
+    outline: 2px solid var(--v-tok-accent);
     outline-offset: 3px;
   }
 

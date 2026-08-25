@@ -84,8 +84,8 @@ export default {
 .tok-loader {
   display: flex;
   align-items: center;
-  gap: $tok-space-sm;
-  padding: $tok-space-sm 0;
+  gap: 8px;
+  padding: 8px 0;
 
   &__badge {
     display: flex;
@@ -96,10 +96,9 @@ export default {
     // Без перспективы `rotateY` выглядит не поворотом, а сжатием по ширине:
     // браузер рисует плоскую проекцию без схода в глубину.
     perspective: 120px;
-    color: tok-color(text-inverse);
+    color: var(--v-tok-text-inverse);
     border-radius: 50%;
-
-    @include tok-gradient(140deg);
+    background-image: linear-gradient(140deg, var(--v-tok-gradient-from), var(--v-tok-gradient-to));
   }
 
   // Вращение вокруг вертикальной оси — звёздочка поворачивается к зрителю
@@ -110,7 +109,7 @@ export default {
   }
 
   &__phrase {
-    color: tok-color(text-muted);
+    color: var(--v-tok-text-muted);
     font-size: 15px;
   }
 }

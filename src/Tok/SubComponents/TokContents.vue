@@ -65,8 +65,8 @@ export default {
 .tok-contents {
   display: flex;
   flex-direction: column;
-  gap: $tok-space-md;
-  margin-top: $tok-space-md;
+  gap: 16px;
+  margin-top: 16px;
 
   // Блок не имеет права расширить панель: ширину задаёт лента, а не содержимое.
   &__block {

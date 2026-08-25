@@ -130,8 +130,8 @@ export default {
 <style lang="scss">
 .tok-root {
   position: relative;
-  z-index: $tok-z-panel;
-  color: tok-color(text);
+  z-index: 201;
+  color: var(--v-tok-text);
   font-family: inherit;
 }
 </style>

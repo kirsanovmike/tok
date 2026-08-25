@@ -14,7 +14,10 @@
 </template>
 
 <script>
-import { applyTokTheme, Tok } from '@/Tok';
+// Импорт по умолчанию и именованный `Tok` — один и тот же компонент (index.js),
+// поэтому предупреждение правила здесь ложное.
+// eslint-disable-next-line import/no-named-as-default
+import Tok from '@/Tok';
 
 import DemoHeader from '@/demo/components/DemoHeader.vue';
 import DemoFooter from '@/demo/components/DemoFooter.vue';
@@ -36,20 +39,6 @@ export default {
   computed: {
     isDark() {
       return this.$vuetify.theme.dark;
-    },
-  },
-
-  watch: {
-    /*
-     * Демо-стенд играет здесь роль `@tne-ui/core`: сам объявляет `--v-tok-*`
-     * на `<html>`. В Трансфере этого вызова не будет — переменные придут
-     * из библиотеки, и `applyTokTheme` их не тронет.
-     */
-    isDark: {
-      handler(dark) {
-        applyTokTheme(dark ? 'dark' : 'light');
-      },
-      immediate: true,
     },
   },
 

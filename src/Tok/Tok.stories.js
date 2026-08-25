@@ -6,21 +6,22 @@
  * истории отличаются не «внешним видом», а состоянием: закрыт / открыт / чем
  * именно ответил ассистент.
  *
- * Что нужно от окружения Storybook:
- *   1. SCSS-контракт — `tok-color()`, миксины, `$tok-*`. Приходит из
- *      `@tne-ui/core` вместе со стилями библиотеки. Если Storybook собирается
- *      в отрыве от них, партиал (или копию `styles/_tokens.scss` этой папки)
- *      нужно прокинуть sass-loader в `.storybook/main.js`;
- *   2. Переменные `--v-tok-*`. Штатно их объявляет `@tne-ui/core`. Если стилей
- *      библиотеки в Storybook нет, их раскладывает контрол `theme` ниже —
- *      поверх объявлений core он не пишет (см. `theme/applyTokTheme.js`);
- *   3. Ничего устанавливать не нужно: `portal-vue` зарегистрирован локально
- *      в `Tok.vue`, Vuetify компоненту не требуется вовсе.
+ * Что нужно от окружения Storybook: только переменные `--v-tok-*` в `:root`.
+ * Их объявляет `@tne-ui/core` вместе со стилями библиотеки, а переключает при
+ * смене темы Vuetify хоста — своего механизма темы у Тока нет (ADR-0010).
+ * Если стилей core в превью нет, страница останется прозрачной: тогда их
+ * подключают в `.storybook/preview.js`.
+ *
+ * Настраивать sass-loader не нужно: стили компонентов ни от чего не зависят —
+ * ни функций, ни миксинов, ни SCSS-переменных в папке не осталось.
+ *
+ * Устанавливать тоже нечего: `portal-vue` зарегистрирован локально в `Tok.vue`,
+ * Vuetify самому компоненту не требуется вовсе.
  */
 // Импорт по умолчанию и именованный `Tok` — один и тот же компонент (index.js),
 // поэтому предупреждение правила здесь ложное.
 // eslint-disable-next-line import/no-named-as-default
-import Tok, { applyTokTheme } from './index';
+import Tok from './index';
 import { fixtures } from './services/api/mock/fixtures';
 
 /**
@@ -45,11 +46,6 @@ export default {
     config: {
       table: { disable: true },
       control: false,
-    },
-    theme: {
-      description:
-        'Тема для изолированного просмотра. Если переменные объявил @tne-ui/core, контрол ничего не меняет',
-      control: { type: 'inline-radio', options: ['light', 'dark'] },
     },
     open: {
       description: 'Открыть шторку сразу после монтирования (состояние истории, не проп)',
@@ -86,7 +82,7 @@ export default {
  * Фон страницы-хоста в историях.
  *
  * Собран на переменных Тока намеренно: во-первых, hex внутри `src/Tok/`
- * допустим только в `theme/tokens.js`; во-вторых, так сразу видно, доехали ли
+ * допустим только в цветах графиков; во-вторых, так сразу видно, доехали ли
  * переменные до документа, — если нет, страница останется прозрачной.
  */
 const STORY_HOST_STYLE_ID = 'tok-story-host-style';
@@ -145,11 +141,10 @@ const Template = (args, { argTypes }) => ({
 
   watch: {
     open: 'syncOpen',
-    theme: 'syncTheme',
   },
 
   mounted() {
-    this.syncTheme();
+    ensureStoryHostStyle();
     this.syncOpen();
   },
 
@@ -160,17 +155,6 @@ const Template = (args, { argTypes }) => ({
   },
 
   methods: {
-    /**
-     * Разложить переменные темы для изолированного просмотра.
-     *
-     * Если `@tne-ui/core` их уже объявил, `applyTokTheme` ничего не делает —
-     * библиотека главнее историй.
-     */
-    syncTheme() {
-      ensureStoryHostStyle();
-      applyTokTheme(this.theme === 'dark' ? 'dark' : 'light');
-    },
-
     /** Привести состояние шторки к значению контрола `open`. */
     syncOpen() {
       const { tok } = this.$refs;
@@ -190,7 +174,6 @@ const Template = (args, { argTypes }) => ({
 
 /** Базовые значения: без них каждая история повторяла бы одно и то же. */
 const BASE_ARGS = {
-  theme: 'light',
   open: false,
   fixtureId: '',
   mockDelayMs: 700,
@@ -213,11 +196,6 @@ Primary.args = { ...BASE_ARGS };
 export const Opened = Template.bind({});
 Opened.storyName = 'Открытая шторка: пустой экран';
 Opened.args = { ...BASE_ARGS, open: true };
-
-/** Тёмная тема: в Трансфере её включает хост, здесь — контрол истории. */
-export const OpenedDark = Template.bind({});
-OpenedDark.storyName = 'Открытая шторка: тёмная тема';
-OpenedDark.args = { ...BASE_ARGS, open: true, theme: 'dark' };
 
 /**
  * Индикатор загрузки. Задержка нарочно большая — за 12 секунд успевают

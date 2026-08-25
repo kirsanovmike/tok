@@ -87,20 +87,20 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: $tok-space-md;
+    gap: 16px;
     max-width: 1440px;
     margin: 0 auto;
-    padding: $tok-space-lg $tok-space-xl $tok-space-md;
+    padding: 24px 32px 16px;
   }
 
   &__actions {
     display: flex;
     align-items: center;
-    gap: $tok-space-xs;
+    gap: 4px;
   }
 
   &__company {
-    margin-right: $tok-space-sm;
+    margin-right: 8px;
     color: host-color(demo-text-muted);
     font-size: 15px;
   }
@@ -112,15 +112,15 @@ export default {
   &__tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: $tok-space-lg;
+    gap: 24px;
     max-width: 1440px;
     margin: 0 auto;
-    padding: 0 $tok-space-xl;
+    padding: 0 32px;
   }
 
   &__tab {
     position: relative;
-    padding: 0 0 $tok-space-sm;
+    padding: 0 0 8px;
     color: host-color(demo-text-muted);
     font-size: 15px;
     background: none;

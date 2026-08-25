@@ -6,6 +6,7 @@ import { mount, createLocalVue } from '@vue/test-utils';
 import App from '@/demo/App.vue';
 import DemoDashboard from '@/demo/views/DemoDashboard.vue';
 import { THEME_STORAGE_KEY, themes } from '@/demo/theme';
+import tokTokens from '@/demo/theme/tokTokens';
 import { createDemoTokConfig, readDemoMockDelay } from '@/demo/tokConfig';
 
 Vue.use(Vuetify);
@@ -42,12 +43,30 @@ describe('демо-хост', () => {
     warnings.mockRestore();
   });
 
-  it('объявляет переменные Тока на документе: в Трансфере это делает @tne-ui/core', () => {
+  it('цвета Тока приходят из палитры Vuetify: их печатает парсер темы', () => {
+    // В Трансфере эти переменные объявляет `@tne-ui/core`; на стенде — Vuetify
+    // из `src/demo/theme/tokTokens.js`, а `src/demo/styles/tok-vars.scss`
+    // переименовывает их в те имена, которые читает Ток (ADR-0010).
+    // Сам стенд в тему не пишет: инлайновый стиль оказался бы сильнее core.
     document.documentElement.removeAttribute('style');
 
     const wrapper = mountHost();
 
-    expect(document.documentElement.style.getPropertyValue('--v-tok-surface')).not.toBe('');
+    expect(themes.light['tok-surface']).toBe(tokTokens.light['tok-surface']);
+    expect(document.documentElement.style.getPropertyValue('--v-tok-surface')).toBe('');
+
+    // Плоский ключ верхнего уровня парсер темы не выкидывает и печатает как
+    // `-base` — на этом держится вся цепочка до `tok-vars.scss`. Значение он
+    // прогоняет через `intToHex`, поэтому в таблице стилей оно в нижнем регистре.
+    const sheet = () => document.getElementById('vuetify-theme-stylesheet').textContent;
+    const declaration = (mode) =>
+      `--v-tok-surface-base: ${tokTokens[mode]['tok-surface'].toLowerCase()};`;
+
+    expect(sheet()).toContain(declaration('light'));
+
+    wrapper.vm.$vuetify.theme.dark = true;
+
+    expect(sheet()).toContain(declaration('dark'));
 
     wrapper.destroy();
   });

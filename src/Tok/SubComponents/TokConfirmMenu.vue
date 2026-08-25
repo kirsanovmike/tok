@@ -118,27 +118,27 @@ export default {
     position: absolute;
     // Под иконкой, прижато к её правому краю: панель у правого края экрана,
     // и меню, выровненное влево, вылезало бы за её границу.
-    top: calc(100% + #{$tok-space-xs});
+    top: calc(100% + 4px);
     right: 0;
     z-index: 1;
     width: 232px;
-    padding: $tok-space-md;
-    background-color: tok-color(surface);
-    border: 1px solid tok-color(border);
-    border-radius: $tok-radius-sm;
-    box-shadow: 0 6px 20px tok-color(shadow);
+    padding: 16px;
+    background-color: var(--v-tok-surface);
+    border: 1px solid var(--v-tok-border);
+    border-radius: 12px;
+    box-shadow: 0 6px 20px var(--v-tok-shadow);
   }
 
   &__text {
-    margin: 0 0 $tok-space-sm;
-    color: tok-color(text);
+    margin: 0 0 8px;
+    color: var(--v-tok-text);
     font-size: 13px;
     line-height: 1.4;
   }
 
   &__actions {
     display: flex;
-    gap: $tok-space-sm;
+    gap: 8px;
   }
 }
 </style>

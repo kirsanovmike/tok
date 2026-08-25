@@ -4,7 +4,7 @@
  * Storybook в этом репозитории не установлен — истории собирает библиотека
  * `@tne-ui/components`. Здесь проверяется то, что от них требует постановка:
  * компонент монтируется без единого действия по установке, а тему истории
- * переключают сами.
+ * не трогают вовсе — её переключает окружение превью (ADR-0010).
  */
 import fs from 'fs';
 import path from 'path';
@@ -61,13 +61,21 @@ describe('истории Тока', () => {
     wrapper.destroy();
   });
 
-  it('контрол темы объявляет переменные Тока', async () => {
+  it('темой не управляют: переменные объявляет окружение превью', async () => {
+    // Раньше истории раскладывали `--v-tok-*` сами. Теперь это забота хоста:
+    // в Трансфере — `@tne-ui/core`, в превью — его же стили. Истории не должны
+    // писать инлайновые переменные: они оказались бы сильнее объявлений core.
+    expect(STORIES_SOURCE).not.toContain('setProperty');
+    expect(STORIES_SOURCE).not.toContain('applyTokTheme');
+
     document.documentElement.removeAttribute('style');
 
     const wrapper = mountStory(stories.Opened);
     await wrapper.vm.$nextTick();
 
-    expect(document.documentElement.style.getPropertyValue('--v-tok-surface')).not.toBe('');
+    // `overflow: hidden` от блокировки прокрутки страницы — единственное,
+    // что Ток пишет в стиль документа.
+    expect(document.documentElement.style.getPropertyValue('--v-tok-surface')).toBe('');
 
     wrapper.destroy();
   });

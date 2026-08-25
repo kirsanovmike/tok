@@ -56,11 +56,11 @@ export default {
   box-sizing: border-box;
   flex-direction: column;
   min-height: 100%;
-  padding: 0 $tok-space-lg;
+  padding: 0 24px;
 
   &__hello {
-    margin: 0 0 $tok-space-xs;
-    color: tok-color(text);
+    margin: 0 0 4px;
+    color: var(--v-tok-text);
     font-size: 17px;
     font-weight: 700;
     line-height: 1.35;
@@ -68,7 +68,7 @@ export default {
 
   &__lead {
     margin: 0;
-    color: tok-color(text);
+    color: var(--v-tok-text);
     font-size: 14px;
     line-height: 1.45;
   }
@@ -77,32 +77,32 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: $tok-space-sm;
+    gap: 8px;
     // `auto` сверху прижимает подсказки к строке ввода, как в макете.
     margin: auto 0 0;
-    padding: $tok-space-xl 0 0;
+    padding: 32px 0 0;
     list-style: none;
   }
 }
 
 .tok-chip {
   max-width: 100%;
-  padding: 10px $tok-space-md;
-  color: tok-color(text);
+  padding: 10px 16px;
+  color: var(--v-tok-text);
   font-size: 14px;
   text-align: left;
-  background-color: tok-color(surface-muted);
+  background-color: var(--v-tok-surface-muted);
   border: 0;
-  border-radius: $tok-radius-md;
+  border-radius: 16px;
   cursor: pointer;
   transition: background-color 140ms linear;
 
   &:hover {
-    background-color: tok-color(accent-soft);
+    background-color: var(--v-tok-accent-soft);
   }
 
   &:focus-visible {
-    outline: 2px solid tok-color(accent);
+    outline: 2px solid var(--v-tok-accent);
     outline-offset: 2px;
   }
 }

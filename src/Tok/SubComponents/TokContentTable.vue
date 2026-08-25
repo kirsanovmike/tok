@@ -220,9 +220,9 @@ export default {
 <style lang="scss">
 .tok-table {
   overflow: hidden;
-  background-color: tok-color(surface);
-  border: 1px solid tok-color(border);
-  border-radius: $tok-radius-md;
+  background-color: var(--v-tok-surface);
+  border: 1px solid var(--v-tok-border);
+  border-radius: 16px;
 
   &__scroller {
     overflow-x: auto;
@@ -239,7 +239,7 @@ export default {
 
     th,
     td {
-      padding: 7px $tok-space-md;
+      padding: 7px 16px;
       font-size: 13px;
       line-height: 1.3;
       text-align: left;
@@ -247,22 +247,22 @@ export default {
     }
 
     th {
-      color: tok-color(text-muted);
+      color: var(--v-tok-text-muted);
       font-weight: 400;
-      background-color: tok-color(surface-elevated);
+      background-color: var(--v-tok-surface-elevated);
     }
 
     td {
-      color: tok-color(text);
-      border-top: 1px solid tok-color(border);
+      color: var(--v-tok-text);
+      border-top: 1px solid var(--v-tok-border);
     }
   }
 
   &__indicator {
     position: relative;
     height: 4px;
-    margin: $tok-space-xs $tok-space-md;
-    background-color: tok-color(surface-elevated);
+    margin: 4px 16px;
+    background-color: var(--v-tok-surface-elevated);
     border-radius: 2px;
   }
 
@@ -270,7 +270,7 @@ export default {
     position: absolute;
     top: 0;
     height: 100%;
-    background-color: tok-color(border-strong);
+    background-color: var(--v-tok-border-strong);
     border-radius: 2px;
   }
 
@@ -278,15 +278,15 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: $tok-space-sm;
-    padding: $tok-space-xs $tok-space-md;
-    border-top: 1px solid tok-color(border);
+    gap: 8px;
+    padding: 4px 16px;
+    border-top: 1px solid var(--v-tok-border);
   }
 
   &__actions {
     display: flex;
     align-items: center;
-    gap: $tok-space-sm;
+    gap: 8px;
     min-width: 0;
   }
 
@@ -294,12 +294,12 @@ export default {
     display: flex;
     flex: none;
     align-items: center;
-    gap: $tok-space-xs;
+    gap: 4px;
     margin-left: auto;
   }
 
   &__page-counter {
-    color: tok-color(text-muted);
+    color: var(--v-tok-text-muted);
     font-size: 13px;
     font-variant-numeric: tabular-nums;
   }
@@ -316,11 +316,15 @@ export default {
     border-radius: 50%;
     cursor: pointer;
 
-    @include tok-button-color(text-muted);
+    // `.tok-root` поднимает специфичность над сбросом `button { color: inherit }`
+    // у Vuetify и normalize: без него кнопка красится в цвет родителя.
+    .tok-root & {
+      color: var(--v-tok-text-muted);
+    }
 
     &:hover:not(:disabled) {
-      color: tok-color(text);
-      background-color: tok-color(surface-muted);
+      color: var(--v-tok-text);
+      background-color: var(--v-tok-surface-muted);
     }
 
     &:disabled {
@@ -329,7 +333,7 @@ export default {
     }
 
     &:focus-visible {
-      outline: 2px solid tok-color(accent);
+      outline: 2px solid var(--v-tok-accent);
       outline-offset: 2px;
     }
   }

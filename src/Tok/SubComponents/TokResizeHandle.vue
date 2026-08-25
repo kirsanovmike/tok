@@ -146,7 +146,7 @@ export default {
     left: 4px;
     width: 4px;
     height: 40px;
-    background-color: tok-color(border-strong);
+    background-color: var(--v-tok-border-strong);
     border-radius: 2px;
     opacity: 0;
     transform: translateY(-50%);
@@ -164,7 +164,7 @@ export default {
     outline: none;
 
     &::before {
-      background-color: tok-color(accent);
+      background-color: var(--v-tok-accent);
     }
   }
 }

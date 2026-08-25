@@ -1,61 +1,69 @@
 /**
- * Запасные CSS-переменные Тока.
+ * Объявление переменных Тока на стороне хоста.
  *
- * В Трансфере `--v-tok-*` объявляет `@tne-ui/core`. Там, где библиотеки нет
- * (демо-стенд, изолированный просмотр компонента), те же переменные пишет
- * `applyTokTheme` из значений `theme/tokens.js`.
+ * Компоненты Тока читают цвета как `var(--v-tok-<токен>)` и больше о теме
+ * ничего не знают (ADR-0010). Объявить эти переменные обязан хост: в Трансфере —
+ * `@tne-ui/core`, на стенде — `src/demo/styles/tok-vars.scss`, который
+ * переименовывает то, что напечатал в `:root` парсер темы Vuetify.
+ *
+ * Цепочка длиной в два звена рвётся молча: забытый в SCSS токен даёт не ошибку
+ * сборки, а невидимый элемент в одной из тем. Поэтому она проверяется здесь.
  */
-import tokens from '@/Tok/theme/tokens';
-import { applyTokTheme, hasHostTokTheme, tokThemeCssVars } from '@/Tok/theme/applyTokTheme';
+import fs from 'fs';
+import path from 'path';
 
-describe('запасные переменные темы Тока', () => {
-  it('имя переменной — «--v-» плюс ключ токена, без суффикса -base', () => {
-    const vars = tokThemeCssVars('light');
+import tokTokens from '@/demo/theme/tokTokens';
 
-    expect(vars['--v-tok-surface']).toBe(tokens.light['tok-surface']);
-    expect(vars['--v-tok-tooltip-text']).toBe(tokens.light['tok-tooltip-text']);
-    expect(Object.keys(vars)).toHaveLength(Object.keys(tokens.light).length);
-    expect(Object.keys(vars).filter((name) => name.endsWith('-base'))).toEqual([]);
+const TOK_VARS_SCSS = fs.readFileSync(
+  path.resolve(__dirname, '../../src/demo/styles/tok-vars.scss'),
+  'utf8',
+);
+
+/** Пары «объявленная переменная → переменная, из которой взято значение». */
+function declarations(source) {
+  const pattern = /^\s*(--v-tok-[\w-]+):\s*var\((--v-tok-[\w-]+)\);$/gm;
+
+  return Array.from(source.matchAll(pattern)).reduce(
+    (acc, [, name, from]) => ({ ...acc, [name]: from }),
+    {},
+  );
+}
+
+describe('переменные Тока на стенде', () => {
+  const declared = declarations(TOK_VARS_SCSS);
+
+  it('каждый цвет из палитры объявлен переменной без суффикса -base', () => {
+    Object.keys(tokTokens.light).forEach((token) => {
+      // Слева — имя, которое стоит в стилях компонентов; справа — то, что
+      // напечатал Vuetify из палитры (`src/demo/theme/tokTokens.js`).
+      expect(declared[`--v-${token}`]).toBe(`--v-${token}-base`);
+    });
   });
 
-  it('пишет переменные на переданный элемент', () => {
-    const target = document.createElement('div');
+  it('лишнего в файле нет: он повторяет палитру ключ в ключ', () => {
+    const expected = Object.keys(tokTokens.light)
+      .map((token) => `--v-${token}`)
+      .sort();
 
-    expect(applyTokTheme('dark', { target })).toBe(true);
-    expect(target.style.getPropertyValue('--v-tok-surface')).toBe(tokens.dark['tok-surface']);
+    expect(Object.keys(declared).sort()).toEqual(expected);
   });
 
-  it('повторный вызов перекрашивает: свои переменные не считаются чужими', () => {
-    const target = document.createElement('div');
+  it('компоненты Тока читают ровно эти имена', () => {
+    const tokDir = path.resolve(__dirname, '../../src/Tok');
+    const walk = (dir) =>
+      fs.readdirSync(dir, { withFileTypes: true }).reduce((acc, entry) => {
+        const full = path.join(dir, entry.name);
+        return entry.isDirectory() ? acc.concat(walk(full)) : acc.concat(full);
+      }, []);
 
-    applyTokTheme('dark', { target });
-    applyTokTheme('light', { target });
+    const used = walk(tokDir)
+      .filter((file) => file.endsWith('.vue') || file.endsWith('.js'))
+      .reduce((acc, file) => {
+        const matches = fs.readFileSync(file, 'utf8').match(/var\((--v-tok-[\w-]+)\)/g) || [];
+        matches.forEach((match) => acc.add(match.slice(4, -1)));
+        return acc;
+      }, new Set());
 
-    expect(target.style.getPropertyValue('--v-tok-surface')).toBe(tokens.light['tok-surface']);
-  });
-
-  it('не трогает элемент, если переменные уже объявил хост', () => {
-    const target = document.createElement('div');
-    const spy = jest
-      .spyOn(window, 'getComputedStyle')
-      .mockReturnValue({ getPropertyValue: () => tokens.dark['tok-surface'] });
-
-    expect(hasHostTokTheme(target)).toBe(true);
-    expect(applyTokTheme('light', { target })).toBe(false);
-    expect(target.style.getPropertyValue('--v-tok-surface')).toBe('');
-
-    spy.mockRestore();
-  });
-
-  it('флаг force перебивает переменные хоста', () => {
-    const target = document.createElement('div');
-    const spy = jest
-      .spyOn(window, 'getComputedStyle')
-      .mockReturnValue({ getPropertyValue: () => tokens.dark['tok-surface'] });
-
-    expect(applyTokTheme('light', { target, force: true })).toBe(true);
-    expect(target.style.getPropertyValue('--v-tok-surface')).toBe(tokens.light['tok-surface']);
-
-    spy.mockRestore();
+    expect(Array.from(used).filter((name) => !declared[name])).toEqual([]);
   });
 });

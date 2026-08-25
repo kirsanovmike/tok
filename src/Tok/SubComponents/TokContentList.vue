@@ -49,14 +49,14 @@ export default {
 
   &__item {
     position: relative;
-    padding-left: $tok-space-md;
-    color: tok-color(text);
+    padding-left: 16px;
+    color: var(--v-tok-text);
     font-size: 15px;
     line-height: 1.5;
     overflow-wrap: anywhere;
 
     & + & {
-      margin-top: $tok-space-xs;
+      margin-top: 4px;
     }
 
     // Маркер рисуем сами, а не `list-style`: у нативного маркера не настроить
@@ -65,7 +65,7 @@ export default {
       position: absolute;
       top: 0;
       left: 0;
-      color: tok-color(accent);
+      color: var(--v-tok-accent);
       content: '•';
     }
   }

@@ -55,19 +55,19 @@ export default {
 
 <style lang="scss">
 .demo-footer {
-  padding: $tok-space-xl;
+  padding: 32px;
   background-color: host-color(demo-footer);
 
   &__inner {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: $tok-space-xl;
+    gap: 32px;
     max-width: 1440px;
     margin: 0 auto;
   }
 
   &__title {
-    margin: 0 0 $tok-space-md;
+    margin: 0 0 16px;
     color: host-color(demo-footer-text);
     font-size: 16px;
     font-weight: 700;
@@ -81,7 +81,7 @@ export default {
 
   &__link {
     display: inline-block;
-    padding: $tok-space-xs 0;
+    padding: 4px 0;
     color: host-color(demo-footer-text);
     font-size: 14px;
     text-decoration: none;
@@ -99,7 +99,7 @@ export default {
   }
 
   &__caption {
-    margin: 0 0 $tok-space-md;
+    margin: 0 0 16px;
     color: host-color(demo-footer-text);
     font-size: 14px;
     opacity: 0.7;

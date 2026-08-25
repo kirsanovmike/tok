@@ -136,7 +136,12 @@ describe('раскладка поля ввода по референсам', () 
   it('поле прокручивается тонкой полосой, как в референсе', () => {
     const input = SOURCE.slice(SOURCE.indexOf('&__input {'));
 
-    expect(input.slice(0, 900)).toContain('@include tok-thin-scrollbar(4px);');
+    const rules = input.slice(0, 1200);
+
+    expect(rules).toContain('scrollbar-width: thin;');
+    expect(rules).toContain('scrollbar-color: var(--v-tok-border-strong) transparent;');
+    // Внутри поля полоса ещё тоньше, чем в ленте: 4px против 6px.
+    expect(rules).toContain('width: 4px;');
   });
 
   it('потолок высоты — восемь строк по референсу «когда много текста»', () => {

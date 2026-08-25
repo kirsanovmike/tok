@@ -55,13 +55,13 @@ export default {
 
 <style lang="scss">
 .tok-content-stat {
-  padding: $tok-space-md;
-  background-color: tok-color(surface-elevated);
-  border-radius: $tok-radius-md;
+  padding: 16px;
+  background-color: var(--v-tok-surface-elevated);
+  border-radius: 16px;
 
   &__label {
-    margin: 0 0 $tok-space-xs;
-    color: tok-color(text-muted);
+    margin: 0 0 4px;
+    color: var(--v-tok-text-muted);
     font-size: 14px;
     line-height: 1.3;
     overflow-wrap: anywhere;
@@ -69,7 +69,7 @@ export default {
 
   &__value {
     margin: 0;
-    color: tok-color(text);
+    color: var(--v-tok-text);
     font-size: 24px;
     font-weight: 700;
     line-height: 1.2;

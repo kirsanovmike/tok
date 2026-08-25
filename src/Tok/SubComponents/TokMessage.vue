@@ -132,25 +132,25 @@ export default {
 
   &__bubble {
     max-width: 85%;
-    padding: 10px $tok-space-md;
-    color: tok-color(text);
+    padding: 10px 16px;
+    color: var(--v-tok-text);
     font-size: 15px;
     line-height: 1.4;
     // Переносы строк из ввода пользователя сохраняем, HTML не интерпретируем.
     white-space: pre-line;
     overflow-wrap: anywhere;
-    background-color: tok-color(surface-muted);
-    border-radius: $tok-radius-md;
+    background-color: var(--v-tok-surface-muted);
+    border-radius: 16px;
   }
 
   &__answer {
     width: 100%;
-    padding-left: $tok-space-sm;
+    padding-left: 8px;
   }
 
   &__text {
     margin: 0;
-    color: tok-color(text);
+    color: var(--v-tok-text);
     font-size: 15px;
     line-height: 1.5;
     white-space: pre-line;
@@ -159,41 +159,48 @@ export default {
 
   // Шаг подтверждения: та же лента, но с акцентной левой границей.
   &--awaiting &__answer {
-    padding-left: $tok-space-md;
-    border-left: 2px solid tok-color(accent);
+    padding-left: 16px;
+    border-left: 2px solid var(--v-tok-accent);
   }
 
   &--error &__text {
-    color: tok-color(danger);
+    color: var(--v-tok-danger);
   }
 
   &__confirm {
     display: flex;
     flex-wrap: wrap;
-    gap: $tok-space-sm;
-    margin-top: $tok-space-md;
+    gap: 8px;
+    margin-top: 16px;
   }
 }
 
 .tok-button {
-  padding: 9px $tok-space-md;
+  padding: 9px 16px;
   font-family: inherit;
   font-size: 14px;
-  background-color: tok-color(surface-muted);
+  background-color: var(--v-tok-surface-muted);
   border: 0;
-  border-radius: $tok-radius-sm;
+  border-radius: 12px;
   cursor: pointer;
 
-  @include tok-button-color(text);
+  // `.tok-root` поднимает специфичность над сбросом `button { color: inherit }`
+  // у Vuetify и normalize: без него кнопка красится в цвет родителя.
+  .tok-root & {
+    color: var(--v-tok-text);
+  }
 
   &--primary {
-    background-color: tok-color(accent);
+    background-color: var(--v-tok-accent);
 
-    @include tok-button-color(text-inverse);
+    // `.tok-root` — против того же сброса `button { color: inherit }`, см. выше.
+    .tok-root & {
+      color: var(--v-tok-text-inverse);
+    }
   }
 
   &:focus-visible {
-    outline: 2px solid tok-color(accent);
+    outline: 2px solid var(--v-tok-accent);
     outline-offset: 2px;
   }
 }

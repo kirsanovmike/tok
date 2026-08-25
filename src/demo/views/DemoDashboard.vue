@@ -165,38 +165,38 @@ export default {
 .demo-dashboard {
   max-width: 1440px;
   margin: 0 auto;
-  padding: $tok-space-lg $tok-space-xl $tok-space-xl;
+  padding: 24px 32px 32px;
   color: host-color(demo-text);
 
   &__news {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: $tok-space-lg;
-    padding: $tok-space-md $tok-space-lg;
+    gap: 24px;
+    padding: 16px 24px;
     border: 1px solid host-color(demo-border);
-    border-radius: $tok-radius-lg;
+    border-radius: 20px;
   }
 
   &__grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: $tok-space-lg;
-    margin-top: $tok-space-lg;
+    gap: 24px;
+    margin-top: 24px;
   }
 
   &__links {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: $tok-space-lg;
-    margin-top: $tok-space-lg;
+    gap: 24px;
+    margin-top: 24px;
   }
 }
 
 .demo-news {
   display: flex;
   flex: 1 1 200px;
-  gap: $tok-space-sm;
+  gap: 8px;
   align-items: center;
 
   &__thumb {
@@ -204,7 +204,7 @@ export default {
     width: 56px;
     height: 56px;
     background-color: host-color(indigo, lighten4);
-    border-radius: $tok-radius-md;
+    border-radius: 16px;
   }
 
   &__title {
@@ -217,9 +217,9 @@ export default {
 
   &__likes {
     display: flex;
-    gap: $tok-space-xs;
+    gap: 4px;
     align-items: center;
-    margin: $tok-space-xs 0 0;
+    margin: 4px 0 0;
     color: host-color(demo-text-muted);
     font-size: 13px;
 
@@ -239,11 +239,11 @@ export default {
 .demo-card {
   display: flex;
   flex-direction: column;
-  gap: $tok-space-md;
-  padding: $tok-space-lg;
+  gap: 16px;
+  padding: 24px;
   background-color: host-color(demo-card);
   border: 1px solid host-color(demo-border);
-  border-radius: $tok-radius-lg;
+  border-radius: 20px;
 
   &--accent {
     background-color: host-color(demo-card-accent);
@@ -257,7 +257,7 @@ export default {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: $tok-space-md;
+    gap: 16px;
   }
 
   &__title {
@@ -274,16 +274,16 @@ export default {
   }
 
   &__inner {
-    padding: $tok-space-md;
+    padding: 16px;
     background-color: host-color(demo-card);
     border: 1px solid host-color(demo-border);
-    border-radius: $tok-radius-md;
+    border-radius: 16px;
   }
 
   &__row {
     display: flex;
-    gap: $tok-space-xl;
-    margin-top: $tok-space-md;
+    gap: 32px;
+    margin-top: 16px;
   }
 
   &__link {
@@ -299,14 +299,13 @@ export default {
     width: 72px;
     height: 72px;
     border-radius: 50%;
-
-    @include tok-gradient;
+    background-image: linear-gradient(135deg, var(--v-tok-gradient-from), var(--v-tok-gradient-to));
   }
 }
 
 .demo-metric {
   display: flex;
-  gap: $tok-space-xs;
+  gap: 4px;
   align-items: baseline;
   margin: 0;
 
@@ -327,14 +326,14 @@ export default {
 
 .demo-period {
   display: flex;
-  gap: $tok-space-xs;
-  padding: $tok-space-xs;
+  gap: 4px;
+  padding: 4px;
   background-color: host-color(demo-card);
   border-radius: 999px;
 
   &__item {
     flex: 1 1 auto;
-    padding: $tok-space-sm $tok-space-md;
+    padding: 8px 16px;
     color: host-color(demo-text);
     font-size: 14px;
     background: none;
@@ -352,11 +351,11 @@ export default {
 .demo-status,
 .demo-alert {
   display: flex;
-  gap: $tok-space-sm;
+  gap: 8px;
   align-items: center;
   align-self: flex-start;
   margin: 0;
-  padding: $tok-space-sm $tok-space-md;
+  padding: 8px 16px;
   font-weight: 600;
   border-radius: 999px;
 }
@@ -376,7 +375,7 @@ export default {
   &__row {
     display: flex;
     justify-content: space-between;
-    padding: $tok-space-sm 0;
+    padding: 8px 0;
 
     dt {
       color: host-color(demo-text);
@@ -393,10 +392,10 @@ export default {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 1px;
-  margin-top: $tok-space-sm;
+  margin-top: 8px;
 
   &__day {
-    padding: $tok-space-sm 0;
+    padding: 8px 0;
     color: host-color(demo-text-muted);
     font-size: 13px;
     text-align: center;
@@ -405,7 +404,7 @@ export default {
 }
 
 .demo-sparkline {
-  margin-top: $tok-space-md;
+  margin-top: 16px;
   color: host-color(indigo, base);
 
   svg {
@@ -418,17 +417,17 @@ export default {
 .demo-link {
   display: flex;
   flex-direction: column;
-  gap: $tok-space-sm;
-  padding: $tok-space-lg;
+  gap: 8px;
+  padding: 24px;
   color: host-color(demo-text);
   text-decoration: none;
   background-color: host-color(demo-card);
   border: 1px solid host-color(demo-border);
-  border-radius: $tok-radius-lg;
+  border-radius: 20px;
 
   &__title {
     display: flex;
-    gap: $tok-space-xs;
+    gap: 4px;
     align-items: center;
     font-weight: 700;
 

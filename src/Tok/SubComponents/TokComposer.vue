@@ -358,13 +358,13 @@ export default {
 <style lang="scss">
 .tok-composer {
   &__notice {
-    margin: 0 0 $tok-space-sm;
-    color: tok-color(text-muted);
+    margin: 0 0 8px;
+    color: var(--v-tok-text-muted);
     font-size: 13px;
     line-height: 1.4;
 
     &--error {
-      color: tok-color(danger);
+      color: var(--v-tok-danger);
     }
   }
 
@@ -376,10 +376,10 @@ export default {
     grid-template-columns: auto minmax(0, 1fr) auto auto;
     grid-template-areas: 'clear input mic send';
     align-items: center;
-    gap: $tok-space-sm;
-    padding: 6px 6px 6px $tok-space-sm;
-    background-color: tok-color(surface);
-    border: 1px solid tok-color(border);
+    gap: 8px;
+    padding: 6px 6px 6px 8px;
+    background-color: var(--v-tok-surface);
+    border: 1px solid var(--v-tok-border);
     border-radius: 28px;
 
     // Фокус приходит на текстовое поле, а видимая «таблетка» — это контейнер вокруг
@@ -393,8 +393,8 @@ export default {
     // `accent-soft`. Прежний `outline: 2px solid accent` поверх той же рамки был
     // единственной кричащей деталью на всей панели.
     &:focus-within {
-      border-color: tok-color(accent);
-      box-shadow: 0 0 0 3px tok-color(accent-soft);
+      border-color: var(--v-tok-accent);
+      box-shadow: 0 0 0 3px var(--v-tok-accent-soft);
     }
 
     // Много текста — раскладка по референсу `Референ на скролл и поле ввода
@@ -405,11 +405,11 @@ export default {
         'input input input input'
         'clear . mic send';
       align-items: end;
-      row-gap: $tok-space-sm;
-      padding: $tok-space-sm;
+      row-gap: 8px;
+      padding: 8px;
       // Таблетка уместна на одной строке; у выросшего на несколько строк поля
       // она съедает углы текста — прямоугольник со скруглением, как в референсе.
-      border-radius: $tok-radius-lg;
+      border-radius: 20px;
     }
 
     // В состоянии записи поле не растёт: выравнивать нечего, и раскладка в
@@ -422,7 +422,7 @@ export default {
   }
 
   &--blocked &__field {
-    background-color: tok-color(surface-muted);
+    background-color: var(--v-tok-surface-muted);
   }
 
   &__input {
@@ -435,7 +435,7 @@ export default {
     max-height: 160px;
     padding: 6px 0;
     overflow-y: hidden;
-    color: tok-color(text);
+    color: var(--v-tok-text);
     font-family: inherit;
     font-size: 15px;
     line-height: 20px;
@@ -448,18 +448,37 @@ export default {
     // Тонкая полоса внутри поля — по референсу: она прижата к правому краю
     // поля и не спорит с текстом. 4px вместо общих 6px: полоса живёт внутри
     // рамки поля, а не по краю панели.
-    @include tok-thin-scrollbar(4px);
+    scrollbar-width: thin;
+    scrollbar-color: var(--v-tok-border-strong) transparent;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--v-tok-border-strong);
+      border-radius: 4px;
+    }
+
+    &:hover::-webkit-scrollbar-thumb {
+      background-color: var(--v-tok-text-muted);
+    }
 
     &::placeholder {
-      color: tok-color(text-muted);
+      color: var(--v-tok-text-muted);
     }
   }
 
   // В многострочной раскладке поле занимает всю ширину: текст отодвигается от
   // рамки, а справа освобождается место под собственную полосу прокрутки.
   &__field--multiline &__input {
-    padding-right: $tok-space-sm;
-    padding-left: $tok-space-sm;
+    padding-right: 8px;
+    padding-left: 8px;
   }
 
   &__clear,
@@ -475,7 +494,11 @@ export default {
     border-radius: 50%;
     cursor: pointer;
 
-    @include tok-button-color(text-muted);
+    // `.tok-root` поднимает специфичность над сбросом `button { color: inherit }`
+    // у Vuetify и normalize: без него кнопка красится в цвет родителя.
+    .tok-root & {
+      color: var(--v-tok-text-muted);
+    }
 
     &:disabled {
       opacity: 0.5;
@@ -483,7 +506,7 @@ export default {
     }
 
     &:focus-visible {
-      outline: 2px solid tok-color(accent);
+      outline: 2px solid var(--v-tok-accent);
       outline-offset: 2px;
     }
   }
@@ -504,15 +527,18 @@ export default {
     width: 32px;
     height: 32px;
     padding: 0;
-    background-color: tok-color(accent);
+    background-color: var(--v-tok-accent);
     border: 0;
     border-radius: 50%;
     cursor: pointer;
 
-    @include tok-button-color(text-inverse);
+    // `.tok-root` — против того же сброса `button { color: inherit }`, см. выше.
+    .tok-root & {
+      color: var(--v-tok-text-inverse);
+    }
 
     &:focus-visible {
-      outline: 2px solid tok-color(accent);
+      outline: 2px solid var(--v-tok-accent);
       outline-offset: 2px;
     }
   }
@@ -531,10 +557,13 @@ export default {
     border-radius: 50%;
     cursor: pointer;
 
-    @include tok-button-color(text-muted);
+    // `.tok-root` — против того же сброса `button { color: inherit }`, см. выше.
+    .tok-root & {
+      color: var(--v-tok-text-muted);
+    }
 
     &:focus-visible {
-      outline: 2px solid tok-color(accent);
+      outline: 2px solid var(--v-tok-accent);
       outline-offset: 2px;
     }
   }
@@ -543,13 +572,13 @@ export default {
     display: flex;
     flex: 1 1 auto;
     align-items: center;
-    gap: $tok-space-sm;
+    gap: 8px;
     // Высота кнопок отмены и остановки: надпись центрируется ровно между ними,
     // а не по своей строке.
     min-height: 36px;
     min-width: 0;
     margin: 0;
-    color: tok-color(text-muted);
+    color: var(--v-tok-text-muted);
     font-size: 14px;
     font-variant-numeric: tabular-nums;
   }
@@ -558,7 +587,7 @@ export default {
     flex: none;
     width: 8px;
     height: 8px;
-    background-color: tok-color(danger);
+    background-color: var(--v-tok-danger);
     border-radius: 50%;
     animation: tok-pulse 1.4s ease-in-out infinite;
   }
@@ -571,12 +600,15 @@ export default {
     width: 36px;
     height: 36px;
     padding: 0;
-    background-color: tok-color(text);
+    background-color: var(--v-tok-text);
     border: 0;
     border-radius: 50%;
     cursor: pointer;
 
-    @include tok-button-color(text-inverse);
+    // `.tok-root` — против того же сброса `button { color: inherit }`, см. выше.
+    .tok-root & {
+      color: var(--v-tok-text-inverse);
+    }
 
     &:disabled {
       opacity: 0.5;
@@ -584,7 +616,7 @@ export default {
     }
 
     &:focus-visible {
-      outline: 2px solid tok-color(accent);
+      outline: 2px solid var(--v-tok-accent);
       outline-offset: 2px;
     }
   }

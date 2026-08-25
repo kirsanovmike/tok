@@ -1,8 +1,8 @@
 <template>
   <!--
     Логотип из `docs/Logo.svg`. Единственное отличие от исходника — цвета остановок
-    градиента заданы не атрибутами, а стилями через токены темы: hex внутри `src/tok/`
-    живёт только в `theme/tokens.js`.
+    градиента заданы не атрибутами, а стилями: переменными `--v-tok-gradient-*`,
+    как и всё остальное в папке.
   -->
   <svg
     class="tok-logo"
@@ -78,11 +78,11 @@ export default {
   display: block;
 
   &__stop--from {
-    stop-color: tok-color(gradient-from);
+    stop-color: var(--v-tok-gradient-from);
   }
 
   &__stop--to {
-    stop-color: tok-color(gradient-to);
+    stop-color: var(--v-tok-gradient-to);
   }
 }
 </style>

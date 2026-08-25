@@ -37,7 +37,7 @@ export default {
 .demo-logo {
   display: flex;
   align-items: center;
-  gap: $tok-space-sm;
+  gap: 8px;
   color: host-color(indigo, base);
 
   &__word {
